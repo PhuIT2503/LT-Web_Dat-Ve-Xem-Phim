@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đang tải... - Web Xem Phim</title>
+    
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/movie-detail.css"> 
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+    <div id="header-placeholder"></div>
+
+    <main>
+        <section class="movie-detail-container">
+            
+            <div class="detail-backdrop"></div>
+
+            <div class="detail-content">
+                <div class="detail-poster">
+                    <img src="" alt="Poster phim" id="detail-poster-img">
+                </div>
+                <div class="detail-info">
+                    <h1 id="detail-title">Đang tải...</h1>
+                    <p id="detail-year">...</p>
+                    <p class="detail-description" id="detail-description">Đang tải mô tả...</p>
+                    
+                    <div class="detail-actions">
+                        <button class="btn btn-primary">
+                            <i class="fa-solid fa-ticket"></i> Đặt Vé
+                        </button>
+                        
+                        <button class="btn btn-secondary btn-open-modal" id="detail-trailer-btn" data-trailer-url="">
+                            <i class="fa-solid fa-circle-info"></i> Trailer
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <div id="modal-placeholder"></div>
+
+    <script src="js/mock-data.js"></script>
+    <script src="js/movie-detail.js"></script>
+</body>
+</html>

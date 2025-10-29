@@ -48,3 +48,7 @@ main {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
 }
+.movie-card-link {
+    text-decoration: none; /* Bỏ gạch chân */
+    color: inherit; /* Kế thừa màu chữ (màu trắng) */
+}

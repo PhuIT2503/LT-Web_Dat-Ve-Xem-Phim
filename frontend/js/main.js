@@ -116,6 +116,7 @@ async function populateMovieGrids() {
  */
 function createCardFromTemplate(template, movie) {
     return template
+        .replace(/{id}/g, movie.id) // <-- THÊM DÒNG NÀY
         .replace(/{trailerUrl}/g, movie.trailerUrl)
         .replace(/{imageUrl}/g, movie.imageUrl)
         .replace(/{title}/g, movie.title)
