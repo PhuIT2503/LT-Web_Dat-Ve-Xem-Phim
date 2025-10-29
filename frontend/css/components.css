@@ -19,10 +19,11 @@
     background-color: var(--light-dark-color);
 }
 
-.logo {
-    font-size: 2rem;
+.main-header .logo {
+    color: red; /* Hoặc màu khác bạn muốn */
+    font-size: 2.5rem; /* Kích thước chữ */
     font-weight: bold;
-    color: var(--primary-color);
+    text-decoration: none;
 }
 
 .main-nav ul {
