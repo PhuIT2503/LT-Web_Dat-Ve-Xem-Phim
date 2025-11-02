@@ -100,6 +100,14 @@ function populateDetailPage(movie) {
     description.textContent = movie.description || "Nội dung phim đang được cập nhật...";
     trailerBtn.dataset.trailerUrl = movie.trailerUrl;
 
+    // Gán hành vi cho nút Đặt Vé: chuyển tới trang booking với movie id
+    const bookBtn = document.querySelector('.detail-actions .btn-primary');
+    if (bookBtn) {
+        bookBtn.addEventListener('click', () => {
+            window.location.href = `booking.html?id=${movie.id}`;
+        });
+    }
+
     // Điền dữ liệu MỚI (với giá trị mặc định nếu thiếu)
     year.textContent = movie.year || "N/A";
     duration.textContent = movie.duration || "N/A";

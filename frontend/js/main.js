@@ -28,6 +28,7 @@ async function initializeApp() {
         // Sau khi MỌI THỨ đã tải xong, mới gán các sự kiện
         addHeaderScrollEffect();
         setupModalListeners();
+    setupHeaderSearchListeners();
 
     } catch (error) {
         console.error("Lỗi khởi tạo trang:", error);
@@ -69,6 +70,44 @@ function populateBannerData(bannerData) {
     titleEl.textContent = bannerData.title;
     descEl.textContent = bannerData.description;
     trailerBtn.dataset.trailerUrl = bannerData.trailerUrl;
+
+    // Gán hành vi cho nút "Xem Phim" - chuyển tới trang chi tiết phim
+    const watchBtn = bannerContainer.querySelector(".btn.btn-primary");
+    if (watchBtn) {
+        watchBtn.addEventListener('click', () => {
+            // Điều hướng tới movie-detail với id của banner
+            if (bannerData.id) {
+                window.location.href = `movie-detail.html?id=${bannerData.id}`;
+            }
+        });
+    }
+}
+
+/**
+ * Gán sự kiện cho ô tìm kiếm trong header (Enter + click)
+ */
+function setupHeaderSearchListeners() {
+    const input = document.getElementById('header-search-input');
+    const btn = document.getElementById('header-search-btn');
+    if (!input || !btn) return;
+
+    function doSearch() {
+        const q = input.value.trim();
+        // Nếu rỗng, chuyển tới trang movies (tất cả)
+        if (q === '') {
+            window.location.href = 'movies.html';
+        } else {
+            window.location.href = `movies.html?q=${encodeURIComponent(q)}`;
+        }
+    }
+
+    // Enter key
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') doSearch();
+    });
+
+    // Click icon
+    btn.addEventListener('click', doSearch);
 }
 
 /**

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt Vé - Web Xem Phim</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+    /* Minimal seat-map styling */
+    .date-selector { display:flex; gap:8px; margin-bottom:12px; overflow:auto; padding-bottom:6px; }
+    .date-item { padding:8px 10px; border-radius:8px; cursor:pointer; border:1px solid #e0e0e0; min-width:96px; text-align:center; background:#fff; }
+    .date-item.selected { background:#2b9cff; color:#fff; border-color:#1f7fe6; }
+    .seat-map { display:grid; grid-template-columns: repeat(12, 40px); gap:8px; justify-content:center; align-items:center; }
+        .seat { width:40px; height:40px; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+        .seat.available { background:#e6f7ff; border:1px solid #80d0ff; }
+        .seat.booked { background:#eee; color:#888; cursor:not-allowed; }
+        .seat.selected { background:#ffecb3; border:1px solid #ffb300; }
+        .screen { text-align:center; margin-bottom:12px; font-weight:600; }
+        .booking-panel { max-width:900px; margin: 0 auto; display:flex; gap:24px; flex-wrap:wrap; }
+        .left { flex:1 1 520px; }
+        .right { width:300px; border-left:1px solid #eee; padding-left:16px; }
+        .seat-legend { display:flex; gap:12px; margin:8px 0 16px; }
+        .legend-item { display:flex; gap:6px; align-items:center; }
+        .legend-box { width:20px; height:20px; border-radius:4px; }
+    </style>
+</head>
+<body>
+
+    <div id="header-placeholder"></div>
+
+    <main>
+        <section class="movie-list-container">
+            <h2 id="booking-title">Đặt Vé</h2>
+            <div class="booking-panel">
+                <div class="left">
+                    <!-- Date selector (week) -->
+                    <div id="date-selector" class="date-selector" aria-label="Chọn ngày"> </div>
+                    <div class="screen">Màn hình</div>
+                    <div id="seat-map" class="seat-map">Đang tải sơ đồ chỗ ngồi...</div>
+                    <div class="seat-legend">
+                        <div class="legend-item"><div class="legend-box" style="background:#e6f7ff;border:1px solid #80d0ff"></div> Trống</div>
+                        <div class="legend-item"><div class="legend-box" style="background:#eee"></div> Đã đặt</div>
+                        <div class="legend-item"><div class="legend-box" style="background:#ffecb3;border:1px solid #ffb300"></div> Đang chọn</div>
+                    </div>
+                </div>
+                <div class="right">
+                    <h3>Chi tiết đặt vé</h3>
+                    <p id="movie-info">Đang tải thông tin phim...</p>
+
+                    <div>
+                        <label>Tên</label>
+                        <input id="cust-name" type="text" placeholder="Tên của bạn" style="width:100%;padding:8px;margin:6px 0;">
+                    </div>
+                    <div>
+                        <label>Điện thoại</label>
+                        <input id="cust-phone" type="text" placeholder="Số điện thoại" style="width:100%;padding:8px;margin:6px 0;">
+                    </div>
+
+                    <div style="margin:12px 0;">
+                        <strong>Ghế đã chọn:</strong>
+                        <div id="selected-list">(chưa chọn)</div>
+                        <div style="margin-top:8px;"><strong>Tổng</strong>: <span id="total-price">0</span> VND</div>
+                    </div>
+
+                    <button id="confirm-booking" class="btn btn-primary">Xác nhận đặt vé</button>
+                    <div id="booking-message" style="margin-top:12px;color:green"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <div id="modal-placeholder"></div>
+
+    <script src="js/mock-data.js"></script>
+    <script src="js/booking.js"></script>
+</body>
+</html>
