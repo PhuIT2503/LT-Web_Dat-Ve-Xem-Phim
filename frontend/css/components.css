@@ -37,6 +37,69 @@
     color: var(--grey-color);
 }
 
+/* MỚI: Wrapper cho các item bên phải */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Khoảng cách giữa icon user và search */
+}
+
+/* MỚI: Container cho user menu */
+.user-menu {
+    position: relative; /* Quan trọng để định vị dropdown */
+}
+
+/* MỚI: Nút icon user */
+.user-menu-btn {
+    background: transparent;
+    border: none;
+    color: var(--light-color);
+    font-size: 1.3rem; /* Kích thước icon */
+    cursor: pointer;
+    padding: 5px; /* Thêm chút đệm để dễ click */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+}
+.user-menu-btn:hover {
+    color: var(--grey-color);
+}
+
+/* MỚI: Dropdown menu */
+.user-dropdown {
+    display: none; /* Ẩn ban đầu */
+    position: absolute;
+    top: 120%; /* Vị trí dưới nút icon (cách 20%) */
+    right: 0;
+    background-color: var(--light-dark-color);
+    border: 1px solid var(--grey-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    width: 150px; /* Độ rộng dropdown */
+    z-index: 101; /* Phải cao hơn header (z-index: 100) */
+    overflow: hidden;
+}
+
+/* MỚI: Class 'active' để hiện dropdown (JS sẽ thêm/xóa) */
+.user-dropdown.active {
+    display: block; 
+}
+
+/* MỚI: Các link trong dropdown */
+.user-dropdown a {
+    display: block;
+    padding: 10px 15px;
+    color: var(--light-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.user-dropdown a:hover {
+    background-color: var(--primary-color);
+    color: var(--light-color);
+}
+
 .search-box {
     border: 1px solid var(--light-color);
     border-radius: 4px;

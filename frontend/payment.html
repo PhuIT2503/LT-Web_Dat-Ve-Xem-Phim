@@ -7,229 +7,13 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <style>
-        /* === NỘI DUNG TỪ frontend/css/variables.css === */
-        :root {
-            --primary-color: #e50914;
-            --dark-color: #141414;
-            --light-dark-color: #181818;
-            --light-color: #ffffff;
-            --grey-color: #8c8c8c;
-            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            --header-height: 70px;
-        }
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
 
-        /* === NỘI DUNG TỪ frontend/css/style.css === */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: var(--font-family);
-            background-color: var(--dark-color);
-            color: var(--light-color);
-            line-height: 1.6;
-        }
-        a { color: var(--light-color); text-decoration: none; }
-        ul { list-style: none; }
-        img { max-width: 100%; height: auto; display: block; }
-        main { padding-top: var(--header-height); }
-        .btn {
-            padding: 10px 25px; border: none; border-radius: 4px;
-            font-size: 1.1rem; font-weight: bold; cursor: pointer;
-            margin-right: 10px; transition: opacity 0.3s ease;
-        }
-        .btn:hover { opacity: 0.8; }
-        .btn-primary { background-color: var(--primary-color); color: var(--light-color); }
+    <link rel="stylesheet" href="css/payment.css">
 
-        /* === NỘI DUNG TỪ frontend/css/components.css (Header/Footer/Modal) === */
-        .main-header {
-            position: fixed; top: 0; left: 0; width: 100%;
-            height: var(--header-height); background: var(--light-dark-color);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 4%; z-index: 100;
-        }
-        .logo { font-size: 2rem; font-weight: bold; color: var(--primary-color); }
-        .main-nav ul { display: flex; }
-        .main-nav li { margin-left: 20px; }
-        .main-nav a:hover { color: var(--grey-color); }
-        .search-box {
-            border: 1px solid var(--light-color); border-radius: 4px;
-            padding: 5px 10px; background-color: rgba(0,0,0,0.5);
-        }
-        .search-box input { background: transparent; border: none; color: var(--light-color); outline: none; }
-        .search-box i { color: var(--grey-color); }
-        .main-footer {
-            border-top: 1px solid var(--grey-color); padding: 40px 4%;
-            margin-top: 40px; text-align: center; color: var(--grey-color);
-        }
-        .modal-trailer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.85); display: none;
-            justify-content: center; align-items: center; z-index: 1000;
-        }
-        .modal-trailer.active { display: flex; }
-        .modal-content { position: relative; width: 80%; max-width: 900px; }
-        .modal-close {
-            position: absolute; top: -40px; right: 0;
-            font-size: 2rem; color: var(--light-color); cursor: pointer;
-        }
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-
-        /* === CSS MỚI: CHO TRANG THANH TOÁN === */
-        .payment-container {
-            display: flex;
-            flex-wrap: wrap;
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 4%;
-            gap: 30px;
-            color: #fff;
-        }
-
-        /* Cột trái: Chi tiết thanh toán */
-        .payment-methods {
-            flex: 1;
-            min-width: 400px;
-            background-color: var(--light-dark-color);
-            padding: 30px;
-            border-radius: 8px;
-        }
-        .payment-methods h2 {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--grey-color);
-            padding-bottom: 10px;
-        }
-        .payment-tabs {
-            display: flex;
-            border-bottom: 1px solid var(--grey-color);
-            margin-bottom: 25px;
-        }
-        .tab-btn {
-            background: none;
-            border: none;
-            color: var(--grey-color);
-            font-size: 1.1rem;
-            font-weight: 600;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-        }
-        .tab-btn.active {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-        }
-        .tab-content {
-            display: none; /* Ẩn mặc định */
-            min-height: 200px;
-        }
-        .tab-content.active {
-            display: block; /* Hiện tab được chọn */
-        }
-        .tab-content p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-        /* Giả lập form thẻ */
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: var(--grey-color); }
-        .form-group input {
-            width: 100%; padding: 10px; border-radius: 4px;
-            border: 1px solid var(--grey-color);
-            background-color: var(--dark-color);
-            color: var(--light-color); font-size: 1rem;
-        }
-        /* Giả lập QR Code */
-        #qr-code-img {
-            width: 200px;
-            height: 200px;
-            background-color: #fff;
-            margin: 10px auto;
-            display: block;
-            padding: 10px; /* (Giả lập ảnh QR) */
-        }
-        
-        /* Cột phải: Tóm tắt vé */
-        .booking-summary {
-            flex-basis: 400px; /* Chiều rộng cố định */
-            position: sticky;
-            top: 100px;
-            height: fit-content;
-            background-color: var(--light-dark-color);
-            border-radius: 8px;
-            padding: 20px;
-        }
-        .booking-summary h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--grey-color);
-            padding-bottom: 10px;
-        }
-        .summary-movie-info {
-            display: flex;
-            gap: 15px;
-            border-bottom: 1px dashed var(--grey-color);
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-        }
-        .summary-movie-info img {
-            width: 80px;
-            border-radius: 4px;
-        }
-        .summary-movie-info h4 { font-size: 1.3rem; }
-        .summary-movie-info p { font-size: 0.9rem; color: var(--grey-color); }
-        
-        .summary-details {
-            border-bottom: 1px dashed var(--grey-color);
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-        }
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 1rem;
-        }
-        .summary-item span:first-child { color: var(--grey-color); }
-        .summary-item span:last-child { font-weight: 600; color: var(--light-color); }
-        .summary-item-list { color: var(--light-color); font-weight: 600; word-break: break-all; }
-        #combo-summary-list .summary-item span:first-child { color: var(--light-color); }
-
-        .summary-total {
-            border-top: 1px solid var(--grey-color);
-            padding-top: 15px; margin-top: 15px;
-            display: flex; justify-content: space-between;
-            font-size: 1.5rem; font-weight: bold;
-            color: var(--primary-color);
-        }
-        #confirm-payment { width: 100%; margin-top: 20px; font-size: 1.2rem; }
-        
-        /* Modal thông báo thành công */
-        .payment-success-modal {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.9);
-            display: none; /* Ẩn ban đầu */
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-        .payment-success-content {
-            background-color: var(--light-dark-color);
-            padding: 40px;
-            border-radius: 10px;
-            text-align: center;
-            border-top: 5px solid var(--primary-color);
-        }
-        .payment-success-content h2 { font-size: 2rem; margin-bottom: 15px; color: var(--primary-color); }
-        .payment-success-content p { font-size: 1.2rem; margin-bottom: 25px; }
-        
-        /* Responsive */
-        @media (max-width: 900px) {
-            .payment-container { flex-direction: column-reverse; } /* Đảo cột */
-            .booking-summary { flex-basis: 100%; position: static; }
-            .payment-methods { min-width: 100%; }
-        }
-    </style>
 </head>
 <body>
 
@@ -242,9 +26,22 @@
                 <li><a href="movies.html">Phim Bộ</a></li>
             </ul>
         </nav>
-        <div class="search-box">
-            <input id="header-search-input" type="text" placeholder="Tìm kiếm...">
-            <i id="header-search-btn" class="fa-solid fa-magnifying-glass" title="Tìm kiếm"></i>
+        
+        <div class="header-right">
+            <div class="user-menu">
+                <button id="user-menu-btn" class="user-menu-btn" title="Tài khoản">
+                    <i class="fa-solid fa-user"></i> 
+                </button>
+                <div class="user-dropdown" id="user-dropdown">
+                    <a href="#login">Đăng nhập</a>
+                    <a href="#register">Đăng kí</a>
+                </div>
+            </div>
+            
+            <div class="search-box">
+                <input id="header-search-input" type="text" placeholder="Tìm kiếm...">
+                <i id="header-search-btn" class="fa-solid fa-magnifying-glass" title="Tìm kiếm"></i>
+            </div>
         </div>
     </header>
 
@@ -338,160 +135,6 @@
         <p>&copy; 2025 Web Xem Phim. Mọi bản quyền thuộc về bạn.</p>
     </footer>
 
-    <div id="modal-placeholder"></div>
-
-    <script>
-        // === DỮ LIỆU GIẢ LẬP (Cần thiết cho JS) ===
-        // (Copy 2 hằng số giá từ booking.js)
-        const SEAT_PRICE = 90000;
-        const MOCK_COMBOS = [
-            {
-                id: 'combo1',
-                title: 'Combo 1 Lớn',
-                price: 75000,
-                description: '1 Bắp Lớn & 1 Nước Lớn',
-                imageUrl: 'https://cdn.galaxycine.vn/media/2022/10/31/combo-1-lon-2_1667205008544.jpg'
-            },
-            {
-                id: 'combo2',
-                title: 'Combo 2 Lớn',
-                price: 89000,
-                description: '1 Bắp Lớn & 2 Nước Lớn',
-                imageUrl: 'https://cdn.galaxycine.vn/media/2022/10/31/combo-2-lon-2_1667205029193.jpg'
-            }
-        ];
-        
-        // === JS CHO TRANG THANH TOÁN ===
-        document.addEventListener('DOMContentLoaded', () => {
-            initializePaymentPage();
-            
-            // (Các hàm setup header/search vẫn giữ lại)
-            setupHeaderSearchListeners();
-            addHeaderScrollEffect();
-        });
-
-        function initializePaymentPage() {
-            // 1. Đọc dữ liệu từ sessionStorage
-            const dataString = sessionStorage.getItem('bookingDetails');
-            if (!dataString) {
-                document.querySelector('.payment-container').innerHTML = 
-                    '<h2>Lỗi: Không tìm thấy thông tin đặt vé. Vui lòng thử lại.</h2>';
-                return;
-            }
-            
-            const data = JSON.parse(dataString);
-
-            // 2. Tính toán lại tổng tiền (để bảo mật)
-            let seatTotal = 0;
-            let comboTotal = 0;
-            
-            // Tính tiền ghế
-            seatTotal = (data.seats || []).length * SEAT_PRICE;
-            
-            // Tính tiền combo
-            const comboListEl = document.getElementById('combo-summary-list');
-            let comboHtml = '';
-            for (const comboId in data.combos) {
-                const quantity = data.combos[comboId];
-                if (quantity > 0) {
-                    const comboData = MOCK_COMBOS.find(c => c.id === comboId);
-                    if (comboData) {
-                        const itemTotal = comboData.price * quantity;
-                        comboTotal += itemTotal;
-                        comboHtml += `
-                            <div class="summary-item">
-                                <span>${quantity} x ${comboData.title}</span>
-                                <span>${itemTotal.toLocaleString('vi-VN')} VND</span>
-                            </div>
-                        `;
-                    }
-                }
-            }
-            comboListEl.innerHTML = comboHtml;
-            if (comboTotal === 0) comboListEl.style.display = 'none';
-
-            const finalTotal = seatTotal + comboTotal;
-
-            // 3. Điền thông tin vào trang
-            document.getElementById('summary-title').textContent = data.movie.title;
-            document.getElementById('summary-poster').src = data.movie.imageUrl;
-            document.getElementById('summary-booking-id').textContent = data.bookingId;
-            document.getElementById('summary-date-time').textContent = 
-                `Ngày: ${data.date} | Suất: ${data.showtime}`;
-            
-            document.getElementById('summary-seat-total').textContent = `${seatTotal.toLocaleString('vi-VN')} VND`;
-            document.getElementById('summary-seat-list').textContent = 
-                (data.seats || []).map(s => s.key).join(', ');
-                
-            document.getElementById('summary-final-total').textContent = `${finalTotal.toLocaleString('vi-VN')} VND`;
-
-            // 4. Gán sự kiện cho Tabs
-            setupPaymentTabs();
-            
-            // 5. Gán sự kiện cho nút Thanh Toán (Giả lập)
-            document.getElementById('confirm-payment').addEventListener('click', () => {
-                const btn = document.getElementById('confirm-payment');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
-                
-                // Giả lập gọi API thanh toán (chờ 2.5 giây)
-                setTimeout(() => {
-                    // Hiện modal thành công
-                    document.getElementById('payment-success-modal').style.display = 'flex';
-                    
-                    // Xóa dữ liệu tạm
-                    sessionStorage.removeItem('bookingDetails');
-
-                }, 2500);
-            });
-            
-            // 6. Gán sự kiện cho nút "Về Trang Chủ"
-            document.getElementById('back-to-home').addEventListener('click', () => {
-                window.location.href = 'index.html';
-            });
-        }
-        
-        function setupPaymentTabs() {
-            const tabContainer = document.querySelector('.payment-tabs');
-            const tabs = tabContainer.querySelectorAll('.tab-btn');
-            const contents = document.querySelector('.payment-methods').querySelectorAll('.tab-content');
-            
-            tabContainer.addEventListener('click', (e) => {
-                const tabBtn = e.target.closest('.tab-btn');
-                if (!tabBtn) return;
-                
-                const tabId = tabBtn.dataset.tab;
-                
-                // Bỏ active ở tất cả
-                tabs.forEach(t => t.classList.remove('active'));
-                contents.forEach(c => c.classList.remove('active'));
-                
-                // Thêm active cho cái được click
-                tabBtn.classList.add('active');
-                document.getElementById(`tab-${tabId}`).classList.add('active');
-            });
-        }
-
-        // --- CÁC HÀM HELPER (Cho header/search) ---
-        function addHeaderScrollEffect() {
-            const header = document.querySelector('.main-header');
-            if (!header) return;
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 50) header.classList.add('scrolled');
-                else header.classList.remove('scrolled');
-            });
-        }
-        function setupHeaderSearchListeners() {
-            const input = document.getElementById('header-search-input');
-            const btn = document.getElementById('header-search-btn');
-            if (!input || !btn) return;
-            function doSearch() {
-                const q = input.value.trim();
-                window.location.href = q === '' ? 'movies.html' : `movies.html?q=${encodeURIComponent(q)}`;
-            }
-            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
-            btn.addEventListener('click', doSearch);
-        }
-    </script>
+    <script src="js/payment.js"></script>
 </body>
 </html>

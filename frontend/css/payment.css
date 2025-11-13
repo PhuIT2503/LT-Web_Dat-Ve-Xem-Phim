@@ -1,0 +1,155 @@
+/* === CSS MỚI: CHO TRANG THANH TOÁN === */
+.payment-container {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 4%;
+    gap: 30px;
+    color: #fff;
+}
+
+/* Cột trái: Chi tiết thanh toán */
+.payment-methods {
+    flex: 1;
+    min-width: 400px;
+    background-color: var(--light-dark-color);
+    padding: 30px;
+    border-radius: 8px;
+}
+.payment-methods h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--grey-color);
+    padding-bottom: 10px;
+}
+.payment-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--grey-color);
+    margin-bottom: 25px;
+}
+.tab-btn {
+    background: none;
+    border: none;
+    color: var(--grey-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+}
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+.tab-content {
+    display: none; /* Ẩn mặc định */
+    min-height: 200px;
+}
+.tab-content.active {
+    display: block; /* Hiện tab được chọn */
+}
+.tab-content p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+/* Giả lập form thẻ */
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; color: var(--grey-color); }
+.form-group input {
+    width: 100%; padding: 10px; border-radius: 4px;
+    border: 1px solid var(--grey-color);
+    background-color: var(--dark-color);
+    color: var(--light-color); font-size: 1rem;
+}
+/* Giả lập QR Code */
+#qr-code-img {
+    width: 200px;
+    height: 200px;
+    background-color: #fff;
+    margin: 10px auto;
+    display: block;
+    padding: 10px; /* (Giả lập ảnh QR) */
+}
+
+/* Cột phải: Tóm tắt vé */
+.booking-summary {
+    flex-basis: 400px; /* Chiều rộng cố định */
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+    background-color: var(--light-dark-color);
+    border-radius: 8px;
+    padding: 20px;
+}
+.booking-summary h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--grey-color);
+    padding-bottom: 10px;
+}
+.summary-movie-info {
+    display: flex;
+    gap: 15px;
+    border-bottom: 1px dashed var(--grey-color);
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+.summary-movie-info img {
+    width: 80px;
+    border-radius: 4px;
+}
+.summary-movie-info h4 { font-size: 1.3rem; }
+.summary-movie-info p { font-size: 0.9rem; color: var(--grey-color); }
+
+.summary-details {
+    border-bottom: 1px dashed var(--grey-color);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+.summary-item span:first-child { color: var(--grey-color); }
+.summary-item span:last-child { font-weight: 600; color: var(--light-color); }
+.summary-item-list { color: var(--light-color); font-weight: 600; word-break: break-all; }
+#combo-summary-list .summary-item span:first-child { color: var(--light-color); }
+
+.summary-total {
+    border-top: 1px solid var(--grey-color);
+    padding-top: 15px; margin-top: 15px;
+    display: flex; justify-content: space-between;
+    font-size: 1.5rem; font-weight: bold;
+    color: var(--primary-color);
+}
+#confirm-payment { width: 100%; margin-top: 20px; font-size: 1.2rem; }
+
+/* Modal thông báo thành công */
+.payment-success-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: none; /* Ẩn ban đầu */
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+.payment-success-content {
+    background-color: var(--light-dark-color);
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    border-top: 5px solid var(--primary-color);
+}
+.payment-success-content h2 { font-size: 2rem; margin-bottom: 15px; color: var(--primary-color); }
+.payment-success-content p { font-size: 1.2rem; margin-bottom: 25px; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .payment-container { flex-direction: column-reverse; } /* Đảo cột */
+    .booking-summary { flex-basis: 100%; position: static; }
+    .payment-methods { min-width: 100%; }
+}

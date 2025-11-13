@@ -13,8 +13,9 @@ async function initializeMoviesPage() {
         addHeaderScrollEffect();
         setupModalListeners();
         setupHeaderSearchListeners();
-
+        setupUserMenuListeners();
         renderSearchResults();
+
     } catch (err) {
         console.error('Lỗi khởi tạo trang movies:', err);
     }
@@ -154,4 +155,30 @@ function setupHeaderSearchListeners() {
     });
 
     btn.addEventListener('click', doSearch);
+}
+
+function setupUserMenuListeners() {
+    const btn = document.getElementById('user-menu-btn');
+    const dropdown = document.getElementById('user-dropdown');
+
+    if (!btn || !dropdown) {
+        console.warn('Không tìm thấy các thành phần của User Menu.');
+        return;
+    }
+
+    // Bật/tắt khi click vào nút
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Ngăn sự kiện click nổi bọt lên window
+        dropdown.classList.toggle('active');
+    });
+
+    // Tắt khi click ra ngoài (click vào window)
+    window.addEventListener('click', (e) => {
+        if (dropdown.classList.contains('active')) {
+            // Chỉ đóng nếu click ra ngoài cả nút và cả dropdown
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        }
+    });
 }

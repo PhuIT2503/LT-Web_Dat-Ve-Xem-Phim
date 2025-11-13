@@ -1,20 +1,26 @@
+/* === NỘI DUNG TỪ frontend/js/booking.js (ĐÃ CẬP NHẬT) === */
 document.addEventListener('DOMContentLoaded', () => {
     initializeBookingPage();
 });
 
 async function initializeBookingPage() {
     try {
-        await Promise.all([
-            loadComponent('#header-placeholder', 'components/header.html'),
-            loadComponent('#footer-placeholder', 'components/footer.html'),
-            loadComponent('#modal-placeholder', 'components/modal-trailer.html')
-        ]);
+        // Tải các component động
+        // (Lưu ý: booking.html gốc của bạn không có placeholder, 
+        // nhưng chúng ta nên thêm vào để load header/footer/modal động)
+        // Nếu bạn muốn giữ header/footer/modal cứng (hard-code) như trong file
+        // booking.html đã upload, thì 3 dòng 'loadComponent' này không cần thiết.
+        
+        // await loadComponent('#header-placeholder', 'components/header.html');
+        // await loadComponent('#footer-placeholder', 'components/footer.html');
+        // await loadComponent('#modal-placeholder', 'components/modal-trailer.html');
 
+        // (Giả sử header/footer/modal được hard-code trong HTML)
         addHeaderScrollEffect();
         setupModalListeners();
         setupHeaderSearchListeners();
+        setupUserMenuListeners(); // <-- ĐÃ THÊM: Gọi hàm menu user
 
-        // Read movie id from URL
         const params = new URLSearchParams(window.location.search);
         const movieId = params.get('id');
         if (!movieId) {
@@ -22,17 +28,22 @@ async function initializeBookingPage() {
             return;
         }
 
-        // Render movie info from mockData
         const movie = findMovieInMock(movieId);
-        const movieInfoEl = document.getElementById('movie-info');
-        movieInfoEl.textContent = movie ? `${movie.title} (${movie.year})` : `Phim #${movieId}`;
+        if (movie) {
+            document.getElementById('movie-poster').src = movie.imageUrl;
+            document.getElementById('movie-poster').style.display = 'block';
+            document.getElementById('movie-title').textContent = movie.title;
+            document.getElementById('movie-year-rating').textContent = `Năm: ${movie.year || 'N/A'} | Rating: ${movie.rating || 'N/A'}`;
+            document.getElementById('movie-duration-genre').textContent = `Thời lượng: ${movie.duration || 'N/A'} | Thể loại: ${movie.genre || 'N/A'}`;
+        } else {
+            document.getElementById('movie-title').textContent = `Phim #${movieId}`;
+        }
+        
+        renderWeekSelector(movieId);
+        renderShowtimes(movieId, selectedDate);
+        renderComboSelector(); 
+        await loadSeatMap(movieId, selectedDate);
 
-    // render date selector (next 7 days) and load seats for selected date
-    renderWeekSelector(movieId);
-    // load seats from backend for default selected date
-    await loadSeatMap(movieId, selectedDate);
-
-        // setup confirm
         document.getElementById('confirm-booking').addEventListener('click', () => confirmBooking(movieId));
 
     } catch (err) {
@@ -42,19 +53,39 @@ async function initializeBookingPage() {
 
 function findMovieInMock(id) {
     const numeric = parseInt(id, 10);
+    // Giả sử mockData được load từ file mock-data.js
     const allMovies = [mockData.banner, ...mockData.newMovies, ...mockData.trendingMovies];
     return allMovies.find(m => m.id === numeric) || null;
 }
 
-let currentSeats = []; // flattened seat data
+let currentSeats = [];
 let selectedSeats = [];
-const SEAT_PRICE = 90000; // VND per seat (example)
-let selectedDate = new Date().toISOString().slice(0,10); // default today (YYYY-MM-DD)
+const SEAT_PRICE = 90000;
+let selectedDate = new Date().toISOString().slice(0,10);
 
-/**
- * Render next 7 days as selectable items and attach handlers.
- * When a date is selected, reload the seat map for that date.
- */
+let selectedShowtime = '09:30';
+const MOCK_SHOWTIMES = ['09:30', '13:00', '16:30', '19:00', '21:15'];
+
+// Dữ liệu Combo giả lập (cần mockData.js)
+const MOCK_COMBOS = [
+    {
+        id: 'combo1',
+        title: 'Combo 1 Lớn',
+        price: 75000,
+        description: '1 Bắp Lớn & 1 Nước Lớn',
+        imageUrl: 'bapnuoc.jpg' // Đảm bảo file bapnuoc.jpg nằm cùng cấp
+    },
+    {
+        id: 'combo2',
+        title: 'Combo 2 Lớn',
+        price: 89000,
+        description: '1 Bắp Lớn & 2 Nước Lớn',
+        imageUrl: 'bapnuoc.jpg' // Đảm bảo file bapnuoc.jpg nằm cùng cấp
+    }
+];
+let selectedCombos = {};
+
+
 function renderWeekSelector(movieId) {
     const container = document.getElementById('date-selector');
     if (!container) return;
@@ -65,47 +96,174 @@ function renderWeekSelector(movieId) {
         const d = new Date(today);
         d.setDate(today.getDate() + i);
         const iso = d.toISOString().slice(0,10);
-        const weekday = new Intl.DateTimeFormat('vi-VN', { weekday: 'short' }).format(d); // e.g., 'Th 4'
-        const label = `${weekday} ${d.getDate()}/${d.getMonth()+1}`;
-
+        
+        const weekday = new Intl.DateTimeFormat('vi-VN', { weekday: 'short' }).format(d);
+        let dayLabel = weekday;
+        if (i === 0) dayLabel = 'Hôm nay';
+        if (i === 1) dayLabel = 'Ngày mai';
+        const dateLabel = `${d.getDate()}/${d.getMonth()+1}`;
+        
         const btn = document.createElement('div');
         btn.className = 'date-item';
         btn.dataset.date = iso;
-        btn.innerHTML = `<div style="font-weight:600">${label}</div><div style="font-size:12px;color:#444">${iso}</div>`;
+        btn.innerHTML = `<div style="font-weight:600">${dayLabel}</div><div style="font-size:12px;">${dateLabel}</div>`;
+        
         if (iso === selectedDate) btn.classList.add('selected');
+        
         btn.addEventListener('click', async () => {
-            // toggle selected class
             const prev = container.querySelector('.date-item.selected');
             if (prev) prev.classList.remove('selected');
             btn.classList.add('selected');
             selectedDate = iso;
-            // clear any selected seats
+            
+            selectedShowtime = MOCK_SHOWTIMES[0];
+            renderShowtimes(movieId, selectedDate);
+            
             selectedSeats = [];
-            updateSelectedDisplay();
-            // reload seat map for the chosen date
+            updateBookingSummary();
             await loadSeatMap(movieId, selectedDate);
         });
         container.appendChild(btn);
     }
 }
 
+function renderShowtimes(movieId, date) {
+    const container = document.getElementById('showtime-selector');
+    if (!container) return;
+    container.innerHTML = '';
+
+    MOCK_SHOWTIMES.forEach(time => {
+        const btn = document.createElement('div');
+        btn.className = 'time-item';
+        btn.dataset.time = time;
+        btn.textContent = time;
+
+        if (time === selectedShowtime) {
+            btn.classList.add('selected');
+        }
+
+        btn.addEventListener('click', async () => {
+            const prev = container.querySelector('.time-item.selected');
+            if (prev) prev.classList.remove('selected');
+            btn.classList.add('selected');
+            selectedShowtime = time;
+            
+            selectedSeats = [];
+            updateBookingSummary();
+            
+            await loadSeatMap(movieId, selectedDate);
+        });
+        container.appendChild(btn);
+    });
+}
+
+function renderComboSelector() {
+    const container = document.getElementById('combo-list-container');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    MOCK_COMBOS.forEach(combo => {
+        const comboId = combo.id;
+        if (!selectedCombos[comboId]) {
+            selectedCombos[comboId] = 0;
+        }
+        
+        const item = document.createElement('div');
+        item.className = 'combo-item';
+        item.id = `combo-item-${comboId}`;
+        
+        item.innerHTML = `
+            <img src="${combo.imageUrl}" alt="${combo.title}">
+            <div class="combo-info">
+                <h4>${combo.title}</h4>
+                <p>${combo.price.toLocaleString('vi-VN')} VND</p>
+            </div>
+            <div class="combo-quantity-selector">
+                <button class="quantity-btn btn-minus" data-id="${comboId}" ${selectedCombos[comboId] === 0 ? 'disabled' : ''}>-</button>
+                <span class="quantity-display">${selectedCombos[comboId]}</span>
+                <button class="quantity-btn btn-plus" data-id="${comboId}">+</button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+    
+    container.addEventListener('click', (e) => {
+        const comboId = e.target.dataset.id;
+        if (!comboId) return;
+        
+        const currentQty = selectedCombos[comboId];
+        
+        if (e.target.classList.contains('btn-plus')) {
+            selectedCombos[comboId] = currentQty + 1;
+        } else if (e.target.classList.contains('btn-minus')) {
+            if (currentQty > 0) {
+                selectedCombos[comboId] = currentQty - 1;
+            }
+        }
+        
+        const itemUI = document.getElementById(`combo-item-${comboId}`);
+        if (itemUI) {
+            itemUI.querySelector('.quantity-display').textContent = selectedCombos[comboId];
+            itemUI.querySelector('.btn-minus').disabled = selectedCombos[comboId] === 0;
+        }
+        
+        updateBookingSummary();
+    });
+}
+
+
 async function loadSeatMap(movieId, date) {
     const container = document.getElementById('seat-map');
     container.innerHTML = 'Đang tải sơ đồ chỗ ngồi...';
     try {
+        // Tạm thời Giả lập backend (vì code gốc của bạn dùng localhost:3000)
+        // Nếu backend của bạn đã chạy, hãy thay thế phần này bằng code fetch gốc
+        console.log(`Đang giả lập tải ghế cho phim ${movieId}, ngày ${date}, suất ${selectedShowtime}`);
+        
+        const rows = [];
+        const seatRows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        const seatCols = 12; 
+        
+        seatRows.forEach(row => {
+            const rowData = { row: row, seats: [] };
+            for (let i = 1; i <= seatCols; i++) {
+                const isBooked = Math.random() > 0.8; // 20% ghế bị đặt
+                rowData.seats.push({
+                    row: row,
+                    col: i,
+                    status: isBooked ? 'booked' : 'available'
+                });
+            }
+            rows.push(rowData);
+        });
+        
+        await new Promise(res => setTimeout(res, 300)); 
+        
+        renderSeatMap(rows);
+        
+        const title = document.getElementById('booking-title');
+        if (title && date) {
+            const dateObj = new Date(date + 'T00:00:00');
+            const dateString = new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(dateObj);
+            title.textContent = `Chọn Vé - Ngày ${dateString} | Suất ${selectedShowtime}`;
+        }
+        
+        /*
+        // Code fetch backend gốc của bạn (bỏ comment nếu backend đã chạy)
         const q = date ? `?date=${encodeURIComponent(date)}` : '';
         const resp = await fetch(`http://localhost:3000/api/movies/${movieId}/seats${q}`);
         if (!resp.ok) throw new Error('Không thể tải dữ liệu ghế');
         const data = await resp.json();
         renderSeatMap(data.rows);
-        // show selected date in UI (optional)
         const title = document.getElementById('booking-title');
         if (title && data.date) {
-            title.textContent = `Đặt Vé — ${data.date}`;
+             title.textContent = `Đặt Vé — ${data.date}`;
         }
+        */
+
     } catch (err) {
         console.error(err);
-        container.innerHTML = '<p style="color:red">Không thể tải sơ đồ chỗ ngồi. Vui lòng khởi động backend (xem README trong thư mục backend).</p>';
+        container.innerHTML = '<p style="color:red">Không thể tải sơ đồ chỗ ngồi. Vui lòng khởi động backend (nếu có).</p>';
     }
 }
 
@@ -113,17 +271,24 @@ function renderSeatMap(rows) {
     const container = document.getElementById('seat-map');
     container.innerHTML = '';
     currentSeats = [];
-
-    // We'll render with some padding columns for row letters
-    // Build a flat grid: for each row, push an empty cell for spacing then seats
+    const COLS_PER_ROW = 14;
+    const GAP_COLS = [2, 11]; 
     rows.forEach(r => {
-        // Row label cell
-        const label = document.createElement('div');
-        label.className = 'seat';
-        label.style.visibility = 'hidden';
-        container.appendChild(label);
-
-        r.seats.forEach(s => {
+        let seatIndex = 0; 
+        for (let i = 0; i < COLS_PER_ROW; i++) {
+            if (GAP_COLS.includes(i)) {
+                const gap = document.createElement('div');
+                gap.className = 'seat gap';
+                container.appendChild(gap);
+                continue;
+            }
+            if (seatIndex >= r.seats.length) {
+                const gap = document.createElement('div');
+                gap.className = 'seat gap';
+                container.appendChild(gap);
+                continue;
+            }
+            const s = r.seats[seatIndex];
             const el = document.createElement('div');
             el.className = 'seat ' + (s.status === 'booked' ? 'booked' : 'available');
             el.textContent = `${s.row}${s.col}`;
@@ -134,14 +299,10 @@ function renderSeatMap(rows) {
             }
             container.appendChild(el);
             currentSeats.push({ row: s.row, col: s.col, status: s.status, el });
-        });
-
-        // small gap between rows: add two invisible cells
-        const gap1 = document.createElement('div'); gap1.className = 'seat'; gap1.style.visibility = 'hidden'; container.appendChild(gap1);
-        const gap2 = document.createElement('div'); gap2.className = 'seat'; gap2.style.visibility = 'hidden'; container.appendChild(gap2);
+            seatIndex++;
+        }
     });
-
-    updateSelectedDisplay();
+    updateBookingSummary();
 }
 
 function onSeatClick(e) {
@@ -151,26 +312,58 @@ function onSeatClick(e) {
     const key = `${row}${col}`;
     const idx = selectedSeats.findIndex(s => s.key === key);
     if (idx >= 0) {
-        // unselect
         selectedSeats.splice(idx, 1);
         el.classList.remove('selected');
     } else {
         selectedSeats.push({ row, col, key });
         el.classList.add('selected');
     }
-    updateSelectedDisplay();
+    updateBookingSummary();
 }
 
-function updateSelectedDisplay() {
-    const list = document.getElementById('selected-list');
-    const totalEl = document.getElementById('total-price');
+function updateBookingSummary() {
+    let seatTotal = 0;
+    let comboTotal = 0;
+    
+    const seatListEl = document.getElementById('selected-list');
+    const seatTotalEl = document.getElementById('selected-seats-total');
+    
     if (selectedSeats.length === 0) {
-        list.textContent = '(chưa chọn)';
-        totalEl.textContent = '0';
+        seatListEl.textContent = '(chưa chọn)';
+        seatTotalEl.textContent = '0 VND';
     } else {
-        list.textContent = selectedSeats.map(s => s.key).join(', ');
-        totalEl.textContent = (selectedSeats.length * SEAT_PRICE).toLocaleString('vi-VN');
+        seatListEl.textContent = selectedSeats.map(s => s.key).join(', ');
+        seatTotal = selectedSeats.length * SEAT_PRICE;
+        seatTotalEl.textContent = `${seatTotal.toLocaleString('vi-VN')} VND`;
     }
+
+    const comboListEl = document.getElementById('combo-summary-list');
+    comboListEl.innerHTML = '';
+    
+    let comboHtml = '';
+    for (const comboId in selectedCombos) {
+        const quantity = selectedCombos[comboId];
+        if (quantity > 0) {
+            const comboData = MOCK_COMBOS.find(c => c.id === comboId);
+            if (comboData) {
+                const itemTotal = comboData.price * quantity;
+                comboTotal += itemTotal;
+                comboHtml += `
+                    <div class="summary-item">
+                        <span>${quantity} x ${comboData.title}</span>
+                        <span>${itemTotal.toLocaleString('vi-VN')} VND</span>
+                    </div>
+                `;
+            }
+        }
+    }
+    comboListEl.innerHTML = comboHtml;
+    
+    comboListEl.style.display = comboTotal > 0 ? 'block' : 'none';
+    
+    const totalPriceEl = document.getElementById('total-price');
+    const finalTotal = seatTotal + comboTotal;
+    totalPriceEl.textContent = `${finalTotal.toLocaleString('vi-VN')} VND`;
 }
 
 async function confirmBooking(movieId) {
@@ -184,44 +377,54 @@ async function confirmBooking(movieId) {
         window.alert('Vui lòng nhập tên và số điện thoại.');
         return;
     }
+    
+    const finalCombos = {};
+    for (const comboId in selectedCombos) {
+        if (selectedCombos[comboId] > 0) {
+            finalCombos[comboId] = selectedCombos[comboId];
+        }
+    }
+    
+    // Cập nhật: Logic này chuyển dữ liệu sang trang payment.html
+    // thay vì gọi API booking ngay lập tức.
+    
+    const movie = findMovieInMock(movieId);
+    const bookingId = `CGV${Math.floor(Math.random() * 100000)}`; // Tạo ID giả
 
-    // Prepare payload
-    const seatsPayload = selectedSeats.map(s => ({ row: s.row, col: s.col }));
+    const bookingDetails = {
+        bookingId: bookingId,
+        movie: {
+            title: movie ? movie.title : 'Phim đã chọn',
+            imageUrl: movie ? movie.imageUrl : ''
+        },
+        date: selectedDate,
+        showtime: selectedShowtime,
+        seats: selectedSeats, 
+        combos: finalCombos
+    };
+
     try {
-        const resp = await fetch('http://localhost:3000/api/bookings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ movieId, seats: seatsPayload, customer: { name, phone }, date: selectedDate })
-        });
+        // 1. Lưu vào sessionStorage cho trang payment
+        sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
 
-        if (resp.status === 409) {
-            const body = await resp.json();
-            window.alert('Lỗi: Một số ghế đã bị đặt bởi người khác: ' + (body.conflicts || []).join(', '));
-            // Reload seat map
-            await loadSeatMap(movieId);
-            selectedSeats = [];
-            updateSelectedDisplay();
-            return;
-        }
+        // 2. Thông báo thành công (tạm thời)
+        document.getElementById('booking-message').textContent = 'Đã lưu thông tin, đang chuyển đến trang thanh toán...';
+        
+        // 3. Chuyển sang trang thanh toán
+        setTimeout(() => {
+            window.location.href = 'payment.html';
+        }, 1500);
 
-        if (!resp.ok) {
-            const body = await resp.text();
-            throw new Error(body || 'Lỗi khi tạo booking');
-        }
-
-        const data = await resp.json();
-        document.getElementById('booking-message').textContent = 'Đặt vé thành công! Mã booking: ' + data.booking.id;
-        // Clear selection and reload seats
-        selectedSeats = [];
-        await loadSeatMap(movieId);
-        // Optionally navigate to a confirmation page
     } catch (err) {
-        console.error('Lỗi khi gửi đặt vé:', err);
-        window.alert('Lỗi khi gửi đặt vé: ' + (err.message || err));
+        console.error('Lỗi khi lưu sessionStorage:', err);
+        window.alert('Lỗi khi lưu chi tiết vé: ' + (err.message || err));
     }
 }
 
-// --- helper functions copied from other scripts ---
+
+// --- CÁC HÀM HELPER (Cho header/modal/search) ---
+
+// (Hàm này dùng nếu bạn load component động)
 async function loadComponent(placeholderId, componentUrl) {
     try {
         const response = await fetch(componentUrl);
@@ -245,13 +448,9 @@ async function loadComponent(placeholderId, componentUrl) {
 function addHeaderScrollEffect() {
     const header = document.querySelector('.main-header');
     if (!header) return;
-
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
-        }
+        if (window.scrollY > 50) header.classList.add('scrolled');
+        else header.classList.remove('scrolled');
     });
 }
 
@@ -259,10 +458,7 @@ function setupModalListeners() {
     const modal = document.getElementById('trailer-modal');
     const closeBtn = document.getElementById('modal-close-btn');
     const trailerIframe = document.getElementById('trailer-iframe');
-
-    if (!modal || !closeBtn || !trailerIframe) {
-        return;
-    }
+    if (!modal || !closeBtn || !trailerIframe) return;
 
     document.body.addEventListener('click', (event) => {
         const openBtn = event.target.closest('.btn-open-modal');
@@ -279,12 +475,9 @@ function setupModalListeners() {
         modal.classList.remove('active');
         trailerIframe.src = '';
     }
-
     closeBtn.addEventListener('click', closeModal);
     modal.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            closeModal();
-        }
+        if (event.target === modal) closeModal();
     });
 }
 
@@ -295,16 +488,34 @@ function setupHeaderSearchListeners() {
 
     function doSearch() {
         const q = input.value.trim();
-        if (q === '') {
-            window.location.href = 'movies.html';
-        } else {
-            window.location.href = `movies.html?q=${encodeURIComponent(q)}`;
-        }
+        window.location.href = q === '' ? 'movies.html' : `movies.html?q=${encodeURIComponent(q)}`;
+    }
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+    btn.addEventListener('click', doSearch);
+}
+
+/**
+ * (HÀM MỚI) Thêm sự kiện Bật/Tắt cho User Menu (Đăng nhập/Đăng kí)
+ */
+function setupUserMenuListeners() {
+    const btn = document.getElementById('user-menu-btn');
+    const dropdown = document.getElementById('user-dropdown');
+    // Kiểm tra an toàn, nếu không tìm thấy (ví dụ: trên trang không có header)
+    if (!btn || !dropdown) {
+        // console.warn('Không tìm thấy các thành phần của User Menu.');
+        return;
     }
 
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') doSearch();
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation(); 
+        dropdown.classList.toggle('active');
     });
 
-    btn.addEventListener('click', doSearch);
+    window.addEventListener('click', (e) => {
+        if (dropdown.classList.contains('active')) {
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        }
+    });
 }
