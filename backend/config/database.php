@@ -1,9 +1,9 @@
 <?php
 class Database {
     private $host = "localhost";
-    private $db_name = "cinema_db"; // Tên database bạn đã tạo
-    private $username = "root";     // Mặc định của XAMPP là root
-    private $password = "";         // Mặc định để trống
+    private $db_name = "cinema_db"; 
+    private $username = "root";     
+    private $password = "";         
     public $conn;
 
     public function getConnection() {
