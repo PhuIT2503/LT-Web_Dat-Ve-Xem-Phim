@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 /**
  * Hàm chính khởi tạo trang chi tiết
  */
+// ⭐ CẬP NHẬT: Thêm 'async'
 async function initializeDetailPage() {
     try {
         // Tải các thành phần chung (header, footer, modal)
@@ -15,13 +16,17 @@ async function initializeDetailPage() {
             loadComponent("#modal-placeholder", "components/modal-trailer.html")
         ]);
 
+        // ⭐ CẬP NHẬT: Gọi hàm kiểm tra đăng nhập
+        await checkLoginStatus(); 
+
         // Gán các sự kiện cho header và modal
         addHeaderScrollEffect();
         setupModalListeners();
+        setupHeaderSearchListeners(); // Thêm hàm này
+        setupUserMenuListeners(); // Xử lý click
 
         // Xử lý logic riêng của trang chi tiết
         loadMovieData();
-        setupUserMenuListeners();
 
     } catch (error) {
         console.error("Lỗi khởi tạo trang chi tiết:", error);
@@ -55,8 +60,6 @@ function loadMovieData() {
 
 /**
  * Tìm kiếm phim trong tất cả các danh sách
- * @param {string} id - ID của phim (dưới dạng string từ URL)
- * @returns {object|null} - Đối tượng phim hoặc null
  */
 function findMovieById(id) {
     const numericId = parseInt(id, 10);
@@ -71,21 +74,14 @@ function findMovieById(id) {
 
 /**
  * Lấp đầy dữ liệu phim vào các phần tử HTML
- * @param {object} movie - Đối tượng phim tìm được
- * * NỘI DUNG HÀM NÀY ĐÃ ĐƯỢC CẬP NHẬT
  */
 function populateDetailPage(movie) {
-    // Cập nhật tiêu đề trang
     document.title = `${movie.title} - Web Xem Phim`;
-
-    // Lấy các phần tử
     const backdrop = document.querySelector(".detail-backdrop");
     const poster = document.getElementById("detail-poster-img");
     const title = document.getElementById("detail-title");
     const description = document.getElementById("detail-description");
     const trailerBtn = document.getElementById("detail-trailer-btn");
-
-    // Lấy các phần tử MỚI
     const year = document.getElementById("detail-year");
     const duration = document.getElementById("detail-duration");
     const rating = document.getElementById("detail-rating");
@@ -93,7 +89,6 @@ function populateDetailPage(movie) {
     const director = document.getElementById("detail-director");
     const cast = document.getElementById("detail-cast");
 
-    // Điền dữ liệu
     backdrop.style.backgroundImage = `url(${movie.imageUrl})`;
     poster.src = movie.imageUrl;
     poster.alt = movie.title;
@@ -101,7 +96,6 @@ function populateDetailPage(movie) {
     description.textContent = movie.description || "Nội dung phim đang được cập nhật...";
     trailerBtn.dataset.trailerUrl = movie.trailerUrl;
 
-    // Gán hành vi cho nút Đặt Vé: chuyển tới trang booking với movie id
     const bookBtn = document.querySelector('.detail-actions .btn-primary');
     if (bookBtn) {
         bookBtn.addEventListener('click', () => {
@@ -109,7 +103,6 @@ function populateDetailPage(movie) {
         });
     }
 
-    // Điền dữ liệu MỚI (với giá trị mặc định nếu thiếu)
     year.textContent = movie.year || "N/A";
     duration.textContent = movie.duration || "N/A";
     rating.textContent = movie.rating || "N/A";
@@ -120,8 +113,6 @@ function populateDetailPage(movie) {
 
 
 // --- CÁC HÀM TIỆN ÍCH (Không thay đổi) ---
-// (Copy từ main.js)
-
 async function loadComponent(placeholderId, componentUrl) {
     try {
         const response = await fetch(componentUrl);
@@ -145,7 +136,6 @@ async function loadComponent(placeholderId, componentUrl) {
 function addHeaderScrollEffect() {
     const header = document.querySelector(".main-header");
     if (!header) return;
-
     window.addEventListener("scroll", () => {
         if (window.scrollY > 50) {
             header.classList.add("scrolled");
@@ -159,12 +149,10 @@ function setupModalListeners() {
     const modal = document.getElementById("trailer-modal");
     const closeBtn = document.getElementById("modal-close-btn");
     const trailerIframe = document.getElementById("trailer-iframe");
-
     if (!modal || !closeBtn || !trailerIframe) {
         console.warn("Không tìm thấy các thành phần của Modal.");
         return;
     }
-
     document.body.addEventListener("click", (event) => {
         const openBtn = event.target.closest(".btn-open-modal");
         if (openBtn) {
@@ -175,12 +163,10 @@ function setupModalListeners() {
             }
         }
     });
-
     function closeModal() {
         modal.classList.remove("active");
         trailerIframe.src = "";
     }
-
     closeBtn.addEventListener("click", closeModal);
     modal.addEventListener("click", (event) => {
         if (event.target === modal) {
@@ -189,28 +175,105 @@ function setupModalListeners() {
     });
 }
 
+// ⭐ HÀM MỚI: Thêm hàm setupHeaderSearchListeners
+function setupHeaderSearchListeners() {
+    const input = document.getElementById('header-search-input');
+    const btn = document.getElementById('header-search-btn');
+    if (!input || !btn) return;
+    function doSearch() {
+        const q = input.value.trim();
+        window.location.href = q === '' ? 'movies.html' : `movies.html?q=${encodeURIComponent(q)}`;
+    }
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+    btn.addEventListener('click', doSearch);
+}
+
 function setupUserMenuListeners() {
     const btn = document.getElementById('user-menu-btn');
     const dropdown = document.getElementById('user-dropdown');
-
     if (!btn || !dropdown) {
         console.warn('Không tìm thấy các thành phần của User Menu.');
         return;
     }
-
-    // Bật/tắt khi click vào nút
     btn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Ngăn sự kiện click nổi bọt lên window
+        e.stopPropagation(); 
         dropdown.classList.toggle('active');
     });
-
-    // Tắt khi click ra ngoài (click vào window)
     window.addEventListener('click', (e) => {
         if (dropdown.classList.contains('active')) {
-            // Chỉ đóng nếu click ra ngoài cả nút và cả dropdown
             if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
                 dropdown.classList.remove('active');
             }
         }
+    });
+}
+
+
+/* ==========================================================
+   ⭐⭐⭐ CÁC HÀM CHUẨN XỬ LÝ LOGIN/LOGOUT ⭐⭐⭐
+   (Dán 3 hàm mới vào đây)
+   ========================================================== */
+
+/**
+ * ⭐ HÀM CHUẨN 1: Kiểm tra trạng thái đăng nhập
+ */
+async function checkLoginStatus() {
+    try {
+        const res = await fetch(
+            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/me.php",
+            {
+                method: "GET",
+                credentials: "include" 
+            }
+        );
+        const data = await res.json();
+        updateHeaderUI(res.ok ? data.username : null);
+    } catch (err) {
+        console.error("Lỗi check login:", err);
+        updateHeaderUI(null);
+    }
+}
+
+/**
+ * ⭐ HÀM CHUẨN 2: Cập nhật UI Header
+ */
+function updateHeaderUI(username) {
+    const userMenuBtn = document.getElementById("user-menu-btn");
+    const userDropdown = document.getElementById("user-dropdown");
+
+    if (!userMenuBtn || !userDropdown) return;
+
+    if (username) {
+        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i> Chào, ${username}`;
+        userDropdown.innerHTML = `
+            <a href="#">Tài khoản của tôi</a>
+            <a href="#" id="logout-btn">Đăng xuất</a>
+        `;
+        // Phải gọi lại setupLogoutListener() ngay sau khi tạo nút
+        setupLogoutListener();
+    } else {
+        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i>`;
+        userDropdown.innerHTML = `
+            <a href="login.html">Đăng nhập</a>
+            <a href="register.html">Đăng kí</a>
+        `;
+    }
+}
+
+/**
+ * ⭐ HÀM CHUẨN 3: Gán sự kiện cho nút Đăng xuất
+ */
+function setupLogoutListener() {
+    const btn = document.getElementById("logout-btn");
+    if (!btn) return;
+
+    btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await fetch(
+            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/logout.php",
+            { credentials: "include" }
+        );
+        updateHeaderUI(null); 
+        window.location.href = "index.html";
     });
 }

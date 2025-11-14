@@ -31,5 +31,13 @@ class User {
     $stmt->bindParam(":password", $this->password_hash);
     return $stmt->execute();
   }
+
+  public function findById($id) {
+    $query = "SELECT id, username, email, role FROM " . $this->table_name . " WHERE id = :id LIMIT 1";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(":id", $id);
+    $stmt->execute();
+    return $stmt;
+  }
 }
 ?>

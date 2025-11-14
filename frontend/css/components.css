@@ -54,16 +54,19 @@
     background: transparent;
     border: none;
     color: var(--light-color);
-    font-size: 1.3rem; /* Kích thước icon */
+    font-size: 1rem; /* ⭐ Giảm font size một chút */
     cursor: pointer;
-    padding: 5px; /* Thêm chút đệm để dễ click */
+    padding: 5px 10px; /* ⭐ Thêm padding ngang */
     display: flex;
     align-items: center;
     justify-content: center;
     transition: color 0.3s ease;
+    gap: 8px; /* ⭐ Khoảng cách giữa icon và chữ */
+    border-radius: 4px; /* Thêm bo góc */
 }
 .user-menu-btn:hover {
     color: var(--grey-color);
+    background-color: rgba(255, 255, 255, 0.1); /* Thêm hiệu ứng hover */
 }
 
 /* MỚI: Dropdown menu */

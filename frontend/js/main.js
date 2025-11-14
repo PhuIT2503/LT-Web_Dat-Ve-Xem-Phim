@@ -17,6 +17,7 @@ async function initializeApp() {
         ]);
 
         // ⭐ MUST HAVE: Kiểm tra đăng nhập sau khi header load
+        // (Chỉ cần gọi 1 lần ở đây)
         await checkLoginStatus();
 
         // Dữ liệu banner
@@ -24,6 +25,8 @@ async function initializeApp() {
 
         // Dữ liệu phim
         await populateMovieGrids();
+        
+        // (Đã xóa dòng 'await checkLoginStatus();' bị lặp ở đây)
 
         // Gán các sự kiện giao diện
         addHeaderScrollEffect();
@@ -152,7 +155,7 @@ function setupModalListeners() {
     modal.addEventListener("click", e => e.target === modal && close());
 }
 
-/** ---------------- USER MENU ------------------- */
+/** ---------------- USER MENU (Sự kiện Click) ------------------- */
 function setupUserMenuListeners() {
     const btn = document.getElementById("user-menu-btn");
     const dropdown = document.getElementById("user-dropdown");
@@ -167,50 +170,69 @@ function setupUserMenuListeners() {
 }
 
 /* ==========================================================
-   ⭐⭐⭐ KIỂM TRA LOGIN – GỌI me.php
+   ⭐⭐⭐ CÁC HÀM CHUẨN XỬ LÝ LOGIN/LOGOUT ⭐⭐⭐
    ========================================================== */
+
+/**
+ * ⭐ HÀM CHUẨN 1: Kiểm tra trạng thái đăng nhập
+ */
 async function checkLoginStatus() {
     try {
         const res = await fetch(
             "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/me.php",
-            { credentials: "include" }
+            {
+                method: "GET",
+                credentials: "include" 
+            }
         );
-
-        const dropdown = document.getElementById("user-dropdown");
-        if (!dropdown) return;
-
         const data = await res.json();
-
-        if (res.ok) {
-            dropdown.innerHTML = `
-                <p style="padding:10px;margin:0;font-weight:bold;">Xin chào User #${data.user_id}</p>
-                <a href="#" id="logout-btn">Đăng xuất</a>
-            `;
-            setupLogoutListener();
-        } else {
-            dropdown.innerHTML = `
-                <a href="login.html">Đăng nhập</a>
-                <a href="register.html">Đăng kí</a>
-            `;
-        }
-
+        updateHeaderUI(res.ok ? data.username : null);
     } catch (err) {
         console.error("Lỗi check login:", err);
+        updateHeaderUI(null);
     }
 }
 
-/* ==========================================================
-   ⭐⭐⭐ LOGOUT
-   ========================================================== */
+/**
+ * ⭐ HÀM CHUẨN 2: Cập nhật UI Header
+ */
+function updateHeaderUI(username) {
+    const userMenuBtn = document.getElementById("user-menu-btn");
+    const userDropdown = document.getElementById("user-dropdown");
+
+    if (!userMenuBtn || !userDropdown) return;
+
+    if (username) {
+        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i> Chào, ${username}`;
+        userDropdown.innerHTML = `
+            <a href="#">Tài khoản của tôi</a>
+            <a href="#" id="logout-btn">Đăng xuất</a>
+        `;
+        // Phải gọi lại setupLogoutListener() ngay sau khi tạo nút
+        setupLogoutListener();
+    } else {
+        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i>`;
+        userDropdown.innerHTML = `
+            <a href="login.html">Đăng nhập</a>
+            <a href="register.html">Đăng kí</a>
+        `;
+    }
+}
+
+/**
+ * ⭐ HÀM CHUẨN 3: Gán sự kiện cho nút Đăng xuất
+ */
 function setupLogoutListener() {
     const btn = document.getElementById("logout-btn");
     if (!btn) return;
 
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", async (e) => {
+        e.preventDefault();
         await fetch(
             "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/logout.php",
             { credentials: "include" }
         );
-        location.reload();
+        updateHeaderUI(null); 
+        window.location.href = "index.html";
     });
 }
