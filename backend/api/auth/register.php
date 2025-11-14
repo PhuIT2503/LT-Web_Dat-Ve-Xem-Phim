@@ -1,6 +1,8 @@
 <?php
-header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Origin: http://localhost");
+header("Access-Control-Allow-Credentials: true");
 header("Content-Type: application/json; charset=UTF-8");
+
 
 include_once "../../config/database.php";
 include_once "../../model/user.php";
