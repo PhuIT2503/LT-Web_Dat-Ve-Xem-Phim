@@ -173,7 +173,7 @@ function setupLogoutListener() {
     btn.addEventListener("click", async (e) => {
         e.preventDefault();
         await fetch(
-            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/logout.php",
+            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/me.php",
             { credentials: "include" }
         );
         updateHeaderUI(null); 

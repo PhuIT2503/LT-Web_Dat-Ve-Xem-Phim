@@ -4,9 +4,10 @@
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
+    'domain' => 'localhost',
     'secure' => false,   // localhost không có HTTPS → để false
     'httponly' => true,
-    'samesite' => 'None' // ⭐ BẮT BUỘC: cho phép cookie cross-site
+    'samesite' => 'Lax' // ⭐ BẮT BUỘC: cho phép cookie cross-site
 ]);
 
 session_start();
