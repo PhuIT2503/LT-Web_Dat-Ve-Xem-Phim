@@ -19,10 +19,15 @@ const MOCK_COMBOS = [
 ];
 
 // === JS CHO TRANG THANH TOÁN ===
-document.addEventListener('DOMContentLoaded', () => {
+// ⭐ CẬP NHẬT: Thêm 'async'
+document.addEventListener('DOMContentLoaded', async () => {
     initializePaymentPage();
     
     // (Các hàm setup header/search/user)
+    
+    // ⭐ CẬP NHẬT: Gọi hàm kiểm tra đăng nhập
+    await checkLoginStatus(); 
+    
     setupHeaderSearchListeners();
     addHeaderScrollEffect();
     setupUserMenuListeners(); // <-- Gọi hàm menu user
@@ -85,6 +90,7 @@ function initializePaymentPage() {
 
     // 4. Gán sự kiện cho Tabs
     setupPaymentTabs();
+    
     
     // 5. Gán sự kiện cho nút Thanh Toán (Giả lập)
     document.getElementById('confirm-payment').addEventListener('click', () => {
@@ -170,5 +176,73 @@ function setupUserMenuListeners() {
                 dropdown.classList.remove('active');
             }
         }
+    });
+}
+
+/* ==========================================================
+   ⭐⭐⭐ CÁC HÀM CHUẨN XỬ LÝ LOGIN/LOGOUT ⭐⭐⭐
+   ========================================================== */
+
+/**
+ * ⭐ HÀM CHUẨN 1: Kiểm tra trạng thái đăng nhập
+ */
+async function checkLoginStatus() {
+    try {
+        const res = await fetch(
+            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/me.php",
+            {
+                method: "GET",
+                credentials: "include" 
+            }
+        );
+        const data = await res.json();
+        updateHeaderUI(res.ok ? data.username : null);
+    } catch (err) {
+        console.error("Lỗi check login:", err);
+        updateHeaderUI(null);
+    }
+}
+
+/**
+ * ⭐ HÀM CHUẨN 2: Cập nhật UI Header
+ */
+function updateHeaderUI(username) {
+    const userMenuBtn = document.getElementById("user-menu-btn");
+    const userDropdown = document.getElementById("user-dropdown");
+
+    if (!userMenuBtn || !userDropdown) return;
+
+    if (username) {
+        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i> Chào, ${username}`;
+        userDropdown.innerHTML = `
+            <a href="#">Tài khoản của tôi</a>
+            <a href="#" id="logout-btn">Đăng xuất</a>
+        `;
+        // Phải gọi lại setupLogoutListener() ngay sau khi tạo nút
+        setupLogoutListener();
+    } else {
+        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i>`;
+        userDropdown.innerHTML = `
+            <a href="login.html">Đăng nhập</a>
+            <a href="register.html">Đăng kí</a>
+        `;
+    }
+}
+
+/**
+ * ⭐ HÀM CHUẨN 3: Gán sự kiện cho nút Đăng xuất
+ */
+function setupLogoutListener() {
+    const btn = document.getElementById("logout-btn");
+    if (!btn) return;
+
+    btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await fetch(
+            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/logout.php",
+            { credentials: "include" }
+        );
+        updateHeaderUI(null); 
+        window.location.href = "index.html";
     });
 }

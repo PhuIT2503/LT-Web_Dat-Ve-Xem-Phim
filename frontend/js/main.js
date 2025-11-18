@@ -5,31 +5,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /**
  * Hàm chính khởi tạo trang web
- * Tải các thành phần và dữ liệu
  */
 async function initializeApp() {
     try {
-        // Tải các thành phần HTML tĩnh (header, footer, modal, banner shell)
-        // Promise.all giúp tải song song cho nhanh
+        // Tải HTML của header/footer/modal/banner
         await Promise.all([
-            // ĐÃ SỬA: Dùng đường dẫn tương đối (không có / ở đầu)
             loadComponent("#header-placeholder", "components/header.html"),
             loadComponent("#footer-placeholder", "components/footer.html"),
             loadComponent("#modal-placeholder", "components/modal-trailer.html"),
             loadComponent("#banner-slider-placeholder", "components/banner-slider.html")
         ]);
 
-        // Sau khi banner shell đã tải xong, điền dữ liệu vào
+        // ⭐ MUST HAVE: Kiểm tra đăng nhập sau khi header load
+        // (Chỉ cần gọi 1 lần ở đây)
+        await checkLoginStatus();
+
+        // Dữ liệu banner
         populateBannerData(mockData.banner);
 
-        // Tải khuôn mẫu movie-card và dùng nó để tạo các grid
+        // Dữ liệu phim
         await populateMovieGrids();
+        
+        // (Đã xóa dòng 'await checkLoginStatus();' bị lặp ở đây)
 
-        // Sau khi MỌI THỨ đã tải xong, mới gán các sự kiện
+        // Gán các sự kiện giao diện
         addHeaderScrollEffect();
         setupModalListeners();
-    setupHeaderSearchListeners();
-    setupUserMenuListeners();
+        setupHeaderSearchListeners();
+
+        // ⭐ Gán lại sự kiện user-menu vì header vừa load xong
+        setupUserMenuListeners();
 
     } catch (error) {
         console.error("Lỗi khởi tạo trang:", error);
@@ -37,215 +42,197 @@ async function initializeApp() {
 }
 
 /**
- * Hàm chung để tải HTML từ 1 file vào 1 vị trí (placeholder)
- * @param {string} placeholderId - ID của div (ví dụ: "#header-placeholder")
- * @param {string} componentUrl - Đường dẫn tới file (ví dụ: "components/header.html")
+ * Tải component HTML
  */
 async function loadComponent(placeholderId, componentUrl) {
     try {
         const response = await fetch(componentUrl);
-        if (!response.ok) {
-            throw new Error(`Không thể tải ${componentUrl}: ${response.statusText}`);
-        }
-        const html = await response.text();
-        document.querySelector(placeholderId).innerHTML = html;
-    } catch (error) {
-        console.error(`Lỗi khi tải component ${componentUrl}:`, error);
-        document.querySelector(placeholderId).innerHTML = `<p style="color:red;">Lỗi tải ${componentUrl}</p>`;
+        if (!response.ok) throw new Error(`Lỗi tải ${componentUrl}`);
+
+        document.querySelector(placeholderId).innerHTML = await response.text();
+    } catch (err) {
+        console.error(err);
+        document.querySelector(placeholderId).innerHTML =
+            `<p style="color:red;">Không thể tải ${componentUrl}</p>`;
     }
 }
 
-/**
- * Điền dữ liệu (từ mock-data) vào banner (đã được loadComponent tải về)
- * @param {object} bannerData - Dữ liệu banner từ mockData
- */
+/** ---------------- BANNER ------------------- */
 function populateBannerData(bannerData) {
-    const bannerContainer = document.querySelector(".banner-slider-container");
-    if (!bannerContainer) return;
+    const banner = document.querySelector(".banner-slider-container");
+    if (!banner) return;
 
-    const titleEl = bannerContainer.querySelector(".banner-title");
-    const descEl = bannerContainer.querySelector(".banner-description");
-    const trailerBtn = bannerContainer.querySelector(".btn-open-modal");
+    banner.style.backgroundImage = `url(${bannerData.imageUrl})`;
+    banner.querySelector(".banner-title").textContent = bannerData.title;
+    banner.querySelector(".banner-description").textContent = bannerData.description;
 
-    bannerContainer.style.backgroundImage = `url(${bannerData.imageUrl})`;
-    titleEl.textContent = bannerData.title;
-    descEl.textContent = bannerData.description;
+    const trailerBtn = banner.querySelector(".btn-open-modal");
     trailerBtn.dataset.trailerUrl = bannerData.trailerUrl;
 
-    // Gán hành vi cho nút "Xem Phim" - chuyển tới trang chi tiết phim
-    const watchBtn = bannerContainer.querySelector(".btn.btn-primary");
+    const watchBtn = banner.querySelector(".btn.btn-primary");
     if (watchBtn) {
-        watchBtn.addEventListener('click', () => {
-            // Điều hướng tới movie-detail với id của banner
-            if (bannerData.id) {
-                window.location.href = `movie-detail.html?id=${bannerData.id}`;
-            }
+        watchBtn.addEventListener("click", () => {
+            window.location.href = `movie-detail.html?id=${bannerData.id}`;
         });
     }
 }
 
-/**
- * Gán sự kiện cho ô tìm kiếm trong header (Enter + click)
- */
+/** ---------------- SEARCH ------------------- */
 function setupHeaderSearchListeners() {
-    const input = document.getElementById('header-search-input');
-    const btn = document.getElementById('header-search-btn');
+    const input = document.getElementById("header-search-input");
+    const btn = document.getElementById("header-search-btn");
     if (!input || !btn) return;
 
-    function doSearch() {
+    const doSearch = () => {
         const q = input.value.trim();
-        // Nếu rỗng, chuyển tới trang movies (tất cả)
-        if (q === '') {
-            window.location.href = 'movies.html';
-        } else {
-            window.location.href = `movies.html?q=${encodeURIComponent(q)}`;
-        }
-    }
+        window.location.href = q ? `movies.html?q=${encodeURIComponent(q)}` : "movies.html";
+    };
 
-    // Enter key
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') doSearch();
-    });
-
-    // Click icon
-    btn.addEventListener('click', doSearch);
+    input.addEventListener("keydown", e => e.key === "Enter" && doSearch());
+    btn.addEventListener("click", doSearch);
 }
 
-/**
- * Tải khuôn mẫu movie-card, sau đó dùng nó để điền dữ liệu
- * cho cả 2 khu vực phim mới và phim thịnh hành.
- */
+/** ---------------- MOVIE GRID ------------------- */
 async function populateMovieGrids() {
     try {
-        // 1. Tải khuôn mẫu (template) của movie-card
-        // ĐÃ SỬA: Dùng đường dẫn tương đối (không có / ở đầu)
-        const response = await fetch("components/movie-card.html");
-        if (!response.ok) {
-            throw new Error("Không thể tải components/movie-card.html");
-        }
-        const cardTemplate = await response.text(); // Lấy HTML thô
+        const template = await (await fetch("components/movie-card.html")).text();
 
-        // 2. Lấy vị trí các grid
         const newMoviesGrid = document.getElementById("new-movies-grid");
         const trendingMoviesGrid = document.getElementById("trending-movies-grid");
 
-        // 3. Tạo HTML cho Phim Mới
-        let newMoviesHtml = "";
-        mockData.newMovies.forEach(movie => {
-            newMoviesHtml += createCardFromTemplate(cardTemplate, movie);
-        });
-        newMoviesGrid.innerHTML = newMoviesHtml;
+        newMoviesGrid.innerHTML = mockData.newMovies
+            .map(m => createCard(template, m)).join("");
 
-        // 4. Tạo HTML cho Phim Thịnh Hành
-        let trendingMoviesHtml = "";
-        mockData.trendingMovies.forEach(movie => {
-            trendingMoviesHtml += createCardFromTemplate(cardTemplate, movie);
-        });
-        trendingMoviesGrid.innerHTML = trendingMoviesHtml;
+        trendingMoviesGrid.innerHTML = mockData.trendingMovies
+            .map(m => createCard(template, m)).join("");
 
-    } catch (error) {
-        console.error("Lỗi khi tạo movie grids:", error);
+    } catch (err) {
+        console.error("Lỗi movie grid:", err);
     }
 }
 
-/**
- * Hàm helper: Thay thế các placeholder trong template bằng dữ liệu thật
- * @param {string} template - Chuỗi HTML của movie-card.html
- * @param {object} movie - Đối tượng phim từ mockData
- * @returns {string} - Chuỗi HTML của card đã điền dữ liệu
- */
-function createCardFromTemplate(template, movie) {
+function createCard(template, movie) {
     return template
-        .replace(/{id}/g, movie.id) // <-- THÊM DÒNG NÀY
-        .replace(/{trailerUrl}/g, movie.trailerUrl)
+        .replace(/{id}/g, movie.id)
         .replace(/{imageUrl}/g, movie.imageUrl)
         .replace(/{title}/g, movie.title)
-        .replace(/{year}/g, movie.year);
+        .replace(/{year}/g, movie.year)
+        .replace(/{trailerUrl}/g, movie.trailerUrl);
 }
 
-// --- CÁC HÀM SỰ KIỆN (Không đổi) ---
-
-/**
- * Thêm hiệu ứng đổi màu header khi cuộn chuột
- */
+/** ---------------- HEADER SCROLL ------------------- */
 function addHeaderScrollEffect() {
     const header = document.querySelector(".main-header");
     if (!header) return;
 
     window.addEventListener("scroll", () => {
-        if (window.scrollY > 50) {
-            header.classList.add("scrolled");
-        } else {
-            header.classList.remove("scrolled");
-        }
+        header.classList.toggle("scrolled", window.scrollY > 50);
     });
 }
 
-/**
- * Thêm sự kiện Bật/Tắt cho Modal Trailer
- */
+/** ---------------- MODAL TRAILER ------------------- */
 function setupModalListeners() {
     const modal = document.getElementById("trailer-modal");
     const closeBtn = document.getElementById("modal-close-btn");
-    const trailerIframe = document.getElementById("trailer-iframe");
+    const iframe = document.getElementById("trailer-iframe");
 
-    if (!modal || !closeBtn || !trailerIframe) {
-        console.warn("Không tìm thấy các thành phần của Modal.");
-        return;
-    }
+    if (!modal || !closeBtn || !iframe) return;
 
-    // Dùng event delegation (ủy quyền sự kiện) trên body
-    document.body.addEventListener("click", (event) => {
-        const openBtn = event.target.closest(".btn-open-modal");
-        if (openBtn) {
-            const url = openBtn.dataset.trailerUrl;
-            if (url) {
-                trailerIframe.src = `${url}?autoplay=1`; // Tự động phát
-                modal.classList.add("active");
-            }
+    document.body.addEventListener("click", e => {
+        const btn = e.target.closest(".btn-open-modal");
+        if (btn) {
+            iframe.src = `${btn.dataset.trailerUrl}?autoplay=1`;
+            modal.classList.add("active");
         }
     });
 
-    // Hàm đóng modal
-    function closeModal() {
+    const close = () => {
         modal.classList.remove("active");
-        trailerIframe.src = ""; // Dừng video
-    }
+        iframe.src = "";
+    };
 
-    closeBtn.addEventListener("click", closeModal);
-    modal.addEventListener("click", (event) => {
-        // Nếu click vào nền mờ (chính là modal) thì đóng
-        if (event.target === modal) {
-            closeModal();
-        }
+    closeBtn.addEventListener("click", close);
+    modal.addEventListener("click", e => e.target === modal && close());
+}
+
+/** ---------------- USER MENU (Sự kiện Click) ------------------- */
+function setupUserMenuListeners() {
+    const btn = document.getElementById("user-menu-btn");
+    const dropdown = document.getElementById("user-dropdown");
+    if (!btn || !dropdown) return;
+
+    btn.addEventListener("click", e => {
+        e.stopPropagation();
+        dropdown.classList.toggle("active");
     });
+
+    window.addEventListener("click", () => dropdown.classList.remove("active"));
+}
+
+/* ==========================================================
+   ⭐⭐⭐ CÁC HÀM CHUẨN XỬ LÝ LOGIN/LOGOUT ⭐⭐⭐
+   ========================================================== */
+
+/**
+ * ⭐ HÀM CHUẨN 1: Kiểm tra trạng thái đăng nhập
+ */
+async function checkLoginStatus() {
+    try {
+        const res = await fetch(
+            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/me.php",
+            {
+                method: "GET",
+                credentials: "include" 
+            }
+        );
+        const data = await res.json();
+        updateHeaderUI(res.ok ? data.username : null);
+    } catch (err) {
+        console.error("Lỗi check login:", err);
+        updateHeaderUI(null);
+    }
 }
 
 /**
- * Thêm sự kiện Bật/Tắt cho User Menu (Đăng nhập/Đăng kí)
+ * ⭐ HÀM CHUẨN 2: Cập nhật UI Header
  */
-function setupUserMenuListeners() {
-    const btn = document.getElementById('user-menu-btn');
-    const dropdown = document.getElementById('user-dropdown');
+function updateHeaderUI(username) {
+    const userMenuBtn = document.getElementById("user-menu-btn");
+    const userDropdown = document.getElementById("user-dropdown");
 
-    if (!btn || !dropdown) {
-        console.warn('Không tìm thấy các thành phần của User Menu.');
-        return;
+    if (!userMenuBtn || !userDropdown) return;
+
+    if (username) {
+        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i> Chào, ${username}`;
+        userDropdown.innerHTML = `
+            <a href="#">Tài khoản của tôi</a>
+            <a href="#" id="logout-btn">Đăng xuất</a>
+        `;
+        // Phải gọi lại setupLogoutListener() ngay sau khi tạo nút
+        setupLogoutListener();
+    } else {
+        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i>`;
+        userDropdown.innerHTML = `
+            <a href="login.html">Đăng nhập</a>
+            <a href="register.html">Đăng kí</a>
+        `;
     }
+}
 
-    // Bật/tắt khi click vào nút
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Ngăn sự kiện click nổi bọt lên window
-        dropdown.classList.toggle('active');
-    });
+/**
+ * ⭐ HÀM CHUẨN 3: Gán sự kiện cho nút Đăng xuất
+ */
+function setupLogoutListener() {
+    const btn = document.getElementById("logout-btn");
+    if (!btn) return;
 
-    // Tắt khi click ra ngoài (click vào window)
-    window.addEventListener('click', (e) => {
-        if (dropdown.classList.contains('active')) {
-            // Chỉ đóng nếu click ra ngoài cả nút và cả dropdown
-            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.classList.remove('active');
-            }
-        }
+    btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await fetch(
+            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/logout.php",
+            { credentials: "include" }
+        );
+        updateHeaderUI(null); 
+        window.location.href = "index.html";
     });
 }

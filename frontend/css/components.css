@@ -54,16 +54,19 @@
     background: transparent;
     border: none;
     color: var(--light-color);
-    font-size: 1.3rem; /* Kích thước icon */
+    font-size: 1rem; /* ⭐ Giảm font size một chút */
     cursor: pointer;
-    padding: 5px; /* Thêm chút đệm để dễ click */
+    padding: 5px 10px; /* ⭐ Thêm padding ngang */
     display: flex;
     align-items: center;
     justify-content: center;
     transition: color 0.3s ease;
+    gap: 8px; /* ⭐ Khoảng cách giữa icon và chữ */
+    border-radius: 4px; /* Thêm bo góc */
 }
 .user-menu-btn:hover {
     color: var(--grey-color);
+    background-color: rgba(255, 255, 255, 0.1); /* Thêm hiệu ứng hover */
 }
 
 /* MỚI: Dropdown menu */
@@ -275,4 +278,27 @@
     left: 0;
     width: 100%;
     height: 100%;
+}
+
+.user-avatar {
+    width: 35px;
+    height: 35px;
+    background-color: var(--primary-color); /* Màu đỏ */
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    margin-right: 8px;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+/* Chỉnh lại nút user menu để căn giữa đẹp hơn */
+.user-menu-btn {
+    display: flex;
+    align-items: center;
+    padding: 5px;
 }
