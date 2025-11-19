@@ -149,8 +149,7 @@ function updateHeaderUI(username) {
         // ĐÃ ĐĂNG NHẬP
         userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i> Chào, ${username}`;
         userDropdown.innerHTML = `
-            <a href="#">Tài khoản của tôi</a>
-            <a href="#" id="logout-btn">Đăng xuất</a>
+            <a href="profile.html">Tài khoản của tôi</a> <a href="#" id="logout-btn">Đăng xuất</a>
         `;
         setupLogoutListener();
     } else {

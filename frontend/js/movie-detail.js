@@ -246,8 +246,8 @@ function updateHeaderUI(username) {
     if (username) {
         userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i> Chào, ${username}`;
         userDropdown.innerHTML = `
-            <a href="#">Tài khoản của tôi</a>
-            <a href="#" id="logout-btn">Đăng xuất</a>
+            <a href="profile.html">Tài khoản của tôi</a> <a href="#" id="logout-btn">Đăng xuất</a>
+
         `;
         // Phải gọi lại setupLogoutListener() ngay sau khi tạo nút
         setupLogoutListener();
