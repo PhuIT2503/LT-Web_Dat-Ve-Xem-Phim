@@ -107,6 +107,19 @@
                     </div>
                 </div>
 
+                <div class="voucher-box">
+                    <h3>Ưu đãi & Voucher</h3>
+                    <div class="voucher-input-group">
+                        <input type="text" id="voucher-input" placeholder="Nhập mã voucher">
+                        <button id="apply-voucher-btn" class="btn-apply">Áp dụng</button>
+                    </div>
+                    <p id="voucher-message"></p>
+                    
+                    <a href="#" id="open-voucher-modal" class="get-voucher-link">
+                        <i class="fa-solid fa-ticket"></i> Lấy mã voucher của tôi
+                    </a>
+                </div>
+
                 <div class="summary-box">
                     <h3>Tóm tắt đặt vé</h3>
                     
@@ -119,6 +132,13 @@
                     
                     <div class="summary-details" id="combo-summary-list">
                         </div>
+
+                    <div class="summary-details" id="discount-section" style="display: none; border-bottom: 1px solid var(--grey-color);">
+                        <div class="summary-item" style="color: #4caf50;">
+                            <span><i class="fa-solid fa-tag"></i> Giảm giá:</span>
+                            <span id="discount-amount">-0 VND</span>
+                        </div>
+                    </div>
 
                     <div class="summary-total">
                         <span>Tổng cộng:</span>
@@ -146,6 +166,19 @@
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                         allowfullscreen>
                 </iframe>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-voucher" id="voucher-list-modal">
+        <div class="modal-voucher-content">
+            <div class="modal-voucher-header">
+                <h3>Kho Voucher Của Tôi</h3>
+                <span class="modal-voucher-close" id="close-voucher-list-modal">&times;</span>
+            </div>
+            <div class="modal-voucher-body">
+                <div id="voucher-list-container">
+                    </div>
             </div>
         </div>
     </div>

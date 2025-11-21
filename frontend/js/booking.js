@@ -1,37 +1,62 @@
-/* === NỘI DUNG TỪ frontend/js/booking.js (ĐÃ CẬP NHẬT) === */
+/* === NỘI DUNG TỪ frontend/js/booking.js (CẬP NHẬT MODAL VOUCHER) === */
 document.addEventListener('DOMContentLoaded', () => {
     initializeBookingPage();
 });
 
-// ⭐ CẬP NHẬT: Đảm bảo hàm là 'async'
+const DEFAULT_POSTER = 'https://via.placeholder.com/300x450?text=No+Poster';
+const DEFAULT_COMBO_IMG = 'https://via.placeholder.com/150x150?text=Combo';
+
+let appliedVoucher = null;
+let discountAmount = 0;
+
+// Danh sách Voucher hợp lệ (Dữ liệu giả lập)
+const VALID_VOUCHERS = {
+    'CINE50': { type: 'percent', value: 0.5, desc: 'Giảm 50% giá vé' },
+    'FREECORN': { type: 'fixed', value: 20000, desc: 'Giảm 20k (Tương đương bắp nhỏ)' },
+    'BIRTHDAY': { type: 'fixed', value: 100000, desc: 'Giảm 100k mừng sinh nhật' },
+    'NEWMEMBER': { type: 'percent', value: 0.1, desc: 'Giảm 10% cho thành viên mới' }
+};
+
 async function initializeBookingPage() {
     try {
-        // (Giả sử header/footer/modal được hard-code trong HTML)
-        
-        // ⭐ CẬP NHẬT: Gọi hàm kiểm tra đăng nhập
         await checkLoginStatus(); 
 
         addHeaderScrollEffect();
-        setupModalListeners();
+        setupModalListeners(); // Modal trailer cũ
         setupHeaderSearchListeners();
-        setupUserMenuListeners(); // <-- Gọi hàm menu user
+        setupUserMenuListeners();
+
+        // --- KHỞI TẠO MODAL VOUCHER MỚI ---
+        setupVoucherListModal();
 
         const params = new URLSearchParams(window.location.search);
         const movieId = params.get('id');
         if (!movieId) {
-            document.getElementById('booking-title').textContent = 'Lỗi: Không có phim để đặt vé';
+            const titleEl = document.getElementById('booking-title');
+            if(titleEl) titleEl.textContent = 'Lỗi: Không có phim để đặt vé';
             return;
         }
 
         const movie = findMovieInMock(movieId);
+        
+        // --- XỬ LÝ ẢNH POSTER PHIM ---
+        const posterEl = document.getElementById('movie-poster');
+        const titleEl = document.getElementById('movie-title');
+        const infoEl = document.getElementById('movie-year-rating');
+        const durEl = document.getElementById('movie-duration-genre');
+
         if (movie) {
-            document.getElementById('movie-poster').src = movie.imageUrl;
-            document.getElementById('movie-poster').style.display = 'block';
-            document.getElementById('movie-title').textContent = movie.title;
-            document.getElementById('movie-year-rating').textContent = `Năm: ${movie.year || 'N/A'} | Rating: ${movie.rating || 'N/A'}`;
-            document.getElementById('movie-duration-genre').textContent = `Thời lượng: ${movie.duration || 'N/A'} | Thể loại: ${movie.genre || 'N/A'}`;
+            posterEl.src = movie.imageUrl || DEFAULT_POSTER;
+            posterEl.onerror = function() { this.src = DEFAULT_POSTER; };
+            posterEl.style.display = 'block';
+
+            if(titleEl) titleEl.textContent = movie.title;
+            if(infoEl) infoEl.textContent = `Năm: ${movie.year || 'N/A'} | Rating: ${movie.rating || 'N/A'}`;
+            if(durEl) durEl.textContent = `Thời lượng: ${movie.duration || 'N/A'} | Thể loại: ${movie.genre || 'N/A'}`;
         } else {
-            document.getElementById('movie-title').textContent = `Phim #${movieId}`;
+            if(titleEl) titleEl.textContent = `Phim #${movieId}`;
+            posterEl.src = DEFAULT_POSTER;
+            posterEl.style.display = 'block';
         }
         
         renderWeekSelector(movieId);
@@ -39,18 +64,188 @@ async function initializeBookingPage() {
         renderComboSelector(); 
         await loadSeatMap(movieId, selectedDate);
 
-        document.getElementById('confirm-booking').addEventListener('click', () => confirmBooking(movieId));
+        const confirmBtn = document.getElementById('confirm-booking');
+        if(confirmBtn) {
+            confirmBtn.addEventListener('click', () => confirmBooking(movieId));
+        }
+
+        // Sự kiện áp dụng voucher
+        const applyBtn = document.getElementById('apply-voucher-btn');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', handleApplyVoucher);
+        }
+        const voucherInput = document.getElementById('voucher-input');
+        if (voucherInput) {
+            voucherInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleApplyVoucher();
+            });
+        }
 
     } catch (err) {
         console.error('Lỗi khởi tạo booking:', err);
     }
 }
 
-// ... (Toàn bộ code logic của booking.js: findMovieInMock, renderWeekSelector, v.v...)
-// ... (Bạn giữ nguyên phần code logic ở giữa) ...
+// --- ⭐ HÀM MỚI: XỬ LÝ MODAL DANH SÁCH VOUCHER ---
+function setupVoucherListModal() {
+    const modal = document.getElementById('voucher-list-modal');
+    const openBtn = document.getElementById('open-voucher-modal'); // Link "Lấy mã voucher"
+    const closeBtn = document.getElementById('close-voucher-list-modal'); // Nút X
+    const listContainer = document.getElementById('voucher-list-container');
 
+    if (!modal || !openBtn || !closeBtn) return;
+
+    // Mở Modal
+    openBtn.addEventListener('click', (e) => {
+        e.preventDefault(); // Chặn chuyển trang
+        renderVoucherList(listContainer);
+        modal.classList.add('active');
+    });
+
+    // Đóng Modal
+    closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+
+    // Click ra ngoài để đóng
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+}
+
+// --- ⭐ HÀM MỚI: RENDER DANH SÁCH VOUCHER VÀO MODAL ---
+// --- CẬP NHẬT HÀM RENDER VOUCHER (Logic "Chọn là dùng ngay") ---
+// --- 1. Sửa hàm lấy danh sách voucher cho Modal (Gọi API list.php) ---
+async function renderVoucherList(container) {
+    container.innerHTML = '<p>Đang tải voucher...</p>';
+    
+    try {
+        // Gọi API lấy danh sách voucher từ DB
+        const res = await fetch('http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/vouchers/list.php');
+        const vouchers = await res.json();
+
+        container.innerHTML = ''; // Xóa loading
+
+        if (vouchers.length === 0) {
+            container.innerHTML = '<p>Hiện chưa có voucher nào.</p>';
+            return;
+        }
+        
+        // Tiêu đề hướng dẫn
+        const hint = document.createElement('p');
+        hint.textContent = "Chọn voucher bên dưới để áp dụng ngay:";
+        hint.style.color = "#aaa";
+        hint.style.fontSize = "0.9rem";
+        hint.style.marginBottom = "15px";
+        container.appendChild(hint);
+
+        // Render từng voucher từ DB
+        vouchers.forEach(v => {
+            const row = document.createElement('div');
+            row.className = 'voucher-item-row';
+            
+            // Format ngày cho đẹp
+            const expDate = new Date(v.exp).toLocaleDateString('vi-VN');
+
+            row.innerHTML = `
+                <div class="voucher-info">
+                    <span class="voucher-code-display">${v.code}</span>
+                    <span class="voucher-desc">${v.desc}</span>
+                    <small style="display:block; color:#666; font-size:0.8rem">HSD: ${expDate}</small>
+                </div>
+                <button class="btn-use-code" data-code="${v.code}">Dùng ngay</button>
+            `;
+            container.appendChild(row);
+        });
+
+        // Gán sự kiện click (Giữ nguyên logic cũ)
+        const useBtns = container.querySelectorAll('.btn-use-code');
+        useBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const code = btn.dataset.code;
+                const voucherInput = document.getElementById('voucher-input');
+                const modal = document.getElementById('voucher-list-modal');
+
+                if (voucherInput) voucherInput.value = code;
+                if (modal) modal.classList.remove('active');
+                
+                // Tự động áp dụng
+                handleApplyVoucher(); 
+            });
+        });
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p style="color:red">Lỗi tải danh sách voucher.</p>';
+    }
+}
+
+// --- 2. Sửa hàm Áp dụng Voucher (Gọi API check.php) ---
+async function handleApplyVoucher() {
+    const input = document.getElementById('voucher-input');
+    const msg = document.getElementById('voucher-message');
+    const btn = document.getElementById('apply-voucher-btn');
+    const code = input.value.trim(); // Không cần toUpperCase() vì DB có thể phân biệt hoa thường, hoặc tùy bạn
+
+    if (!code) {
+        msg.textContent = 'Vui lòng nhập mã voucher.';
+        msg.style.color = 'orange';
+        return;
+    }
+
+    // UI Loading
+    btn.disabled = true;
+    btn.textContent = '...';
+    msg.textContent = '';
+
+    try {
+        // Gọi API kiểm tra mã
+        const res = await fetch(`http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/vouchers/check.php?code=${encodeURIComponent(code)}`);
+        const result = await res.json();
+
+        if (result.success) {
+            // Áp dụng thành công
+            appliedVoucher = { 
+                code: result.data.code, 
+                type: result.data.type, 
+                value: result.data.value, 
+                desc: result.data.desc 
+            };
+
+            msg.textContent = `Áp dụng thành công: ${result.data.desc}`;
+            msg.style.color = '#4caf50';
+            
+            input.disabled = true;
+            btn.textContent = 'Đã dùng';
+        } else {
+            // Lỗi từ API (Mã sai hoặc hết hạn)
+            appliedVoucher = null;
+            msg.textContent = result.message;
+            msg.style.color = '#ff5555';
+            btn.disabled = false;
+            btn.textContent = 'Áp dụng';
+        }
+
+    } catch (err) {
+        console.error(err);
+        msg.textContent = 'Lỗi kết nối server.';
+        msg.style.color = '#ff5555';
+        btn.disabled = false;
+        btn.textContent = 'Áp dụng';
+    }
+    
+    // Cập nhật lại tổng tiền
+    updateBookingSummary(); 
+}
+
+// ... (Các hàm findMovieInMock, renderWeekSelector, renderShowtimes giữ nguyên) ...
 function findMovieInMock(id) {
     const numeric = parseInt(id, 10);
+    if (typeof mockData === 'undefined') {
+        return null;
+    }
     const allMovies = [mockData.banner, ...mockData.newMovies, ...mockData.trendingMovies];
     return allMovies.find(m => m.id === numeric) || null;
 }
@@ -61,20 +256,21 @@ const SEAT_PRICE = 90000;
 let selectedDate = new Date().toISOString().slice(0,10);
 let selectedShowtime = '09:30';
 const MOCK_SHOWTIMES = ['09:30', '13:00', '16:30', '19:00', '21:15'];
+
 const MOCK_COMBOS = [
     {
         id: 'combo1',
-        title: 'Combo 1 Lớn',
+        title: 'Combo 1: Nhỏ',
         price: 75000,
-        description: '1 Bắp Lớn & 1 Nước Lớn',
-        imageUrl: 'bapnuoc.jpg'
+        description: '1 Bắp Nhỏ & 1 Nước Nhỏ',
+        imageUrl: 'assets/bapnuoc.jpg' 
     },
     {
         id: 'combo2',
-        title: 'Combo 2 Lớn',
+        title: 'Combo 2: Lớn',
         price: 89000,
         description: '1 Bắp Lớn & 2 Nước Lớn',
-        imageUrl: 'bapnuoc.jpg'
+        imageUrl: 'assets/bapnuoc.jpg'
     }
 ];
 let selectedCombos = {};
@@ -138,6 +334,7 @@ function renderShowtimes(movieId, date) {
     });
 }
 
+// ... (renderComboSelector, loadSeatMap, renderSeatMap, onSeatClick giữ nguyên) ...
 function renderComboSelector() {
     const container = document.getElementById('combo-list-container');
     if (!container) return;
@@ -150,11 +347,13 @@ function renderComboSelector() {
         const item = document.createElement('div');
         item.className = 'combo-item';
         item.id = `combo-item-${comboId}`;
+        
         item.innerHTML = `
-            <img src="${combo.imageUrl}" alt="${combo.title}">
+            <img src="${combo.imageUrl}" alt="${combo.title}" onerror="this.src='${DEFAULT_COMBO_IMG}'">
             <div class="combo-info">
                 <h4>${combo.title}</h4>
-                <p>${combo.price.toLocaleString('vi-VN')} VND</p>
+                <p>${combo.description}</p>
+                <p class="price-tag">${combo.price.toLocaleString('vi-VN')} VND</p>
             </div>
             <div class="combo-quantity-selector">
                 <button class="quantity-btn btn-minus" data-id="${comboId}" ${selectedCombos[comboId] === 0 ? 'disabled' : ''}>-</button>
@@ -165,12 +364,16 @@ function renderComboSelector() {
         container.appendChild(item);
     });
     container.addEventListener('click', (e) => {
-        const comboId = e.target.dataset.id;
+        const btn = e.target.closest('.quantity-btn');
+        if (!btn) return;
+        
+        const comboId = btn.dataset.id;
         if (!comboId) return;
+
         const currentQty = selectedCombos[comboId];
-        if (e.target.classList.contains('btn-plus')) {
+        if (btn.classList.contains('btn-plus')) {
             selectedCombos[comboId] = currentQty + 1;
-        } else if (e.target.classList.contains('btn-minus')) {
+        } else if (btn.classList.contains('btn-minus')) {
             if (currentQty > 0) {
                 selectedCombos[comboId] = currentQty - 1;
             }
@@ -186,16 +389,15 @@ function renderComboSelector() {
 
 async function loadSeatMap(movieId, date) {
     const container = document.getElementById('seat-map');
-    container.innerHTML = 'Đang tải sơ đồ chỗ ngồi...';
+    container.innerHTML = '<div style="color: white; padding: 20px;">Đang tải sơ đồ chỗ ngồi...</div>';
     try {
-        console.log(`Đang giả lập tải ghế cho phim ${movieId}, ngày ${date}, suất ${selectedShowtime}`);
         const rows = [];
         const seatRows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
         const seatCols = 12; 
         seatRows.forEach(row => {
             const rowData = { row: row, seats: [] };
             for (let i = 1; i <= seatCols; i++) {
-                const isBooked = Math.random() > 0.8;
+                const isBooked = Math.random() > 0.85; 
                 rowData.seats.push({
                     row: row,
                     col: i,
@@ -214,7 +416,7 @@ async function loadSeatMap(movieId, date) {
         }
     } catch (err) {
         console.error(err);
-        container.innerHTML = '<p style="color:red">Không thể tải sơ đồ chỗ ngồi. Vui lòng khởi động backend (nếu có).</p>';
+        container.innerHTML = '<p style="color:red">Không thể tải sơ đồ chỗ ngồi.</p>';
     }
 }
 
@@ -266,6 +468,10 @@ function onSeatClick(e) {
         selectedSeats.splice(idx, 1);
         el.classList.remove('selected');
     } else {
+        if(selectedSeats.length >= 8) {
+            alert("Bạn chỉ được chọn tối đa 8 ghế!");
+            return;
+        }
         selectedSeats.push({ row, col, key });
         el.classList.add('selected');
     }
@@ -277,6 +483,7 @@ function updateBookingSummary() {
     let comboTotal = 0;
     const seatListEl = document.getElementById('selected-list');
     const seatTotalEl = document.getElementById('selected-seats-total');
+    
     if (selectedSeats.length === 0) {
         seatListEl.textContent = '(chưa chọn)';
         seatTotalEl.textContent = '0 VND';
@@ -285,6 +492,7 @@ function updateBookingSummary() {
         seatTotal = selectedSeats.length * SEAT_PRICE;
         seatTotalEl.textContent = `${seatTotal.toLocaleString('vi-VN')} VND`;
     }
+
     const comboListEl = document.getElementById('combo-summary-list');
     comboListEl.innerHTML = '';
     let comboHtml = '';
@@ -306,8 +514,32 @@ function updateBookingSummary() {
     }
     comboListEl.innerHTML = comboHtml;
     comboListEl.style.display = comboTotal > 0 ? 'block' : 'none';
+
+    // --- TÍNH GIẢM GIÁ ---
+    discountAmount = 0;
+    if (appliedVoucher) {
+        if (appliedVoucher.type === 'percent') {
+            discountAmount = seatTotal * appliedVoucher.value;
+        } else if (appliedVoucher.type === 'fixed') {
+            discountAmount = appliedVoucher.value;
+        }
+        
+        const tempTotal = seatTotal + comboTotal;
+        if (discountAmount > tempTotal) discountAmount = tempTotal;
+
+        const discountSection = document.getElementById('discount-section');
+        const discountValEl = document.getElementById('discount-amount');
+        if(discountSection && discountValEl) {
+            discountSection.style.display = 'block';
+            discountValEl.textContent = `-${discountAmount.toLocaleString('vi-VN')} VND`;
+        }
+    } else {
+        const discountSection = document.getElementById('discount-section');
+        if(discountSection) discountSection.style.display = 'none';
+    }
+
     const totalPriceEl = document.getElementById('total-price');
-    const finalTotal = seatTotal + comboTotal;
+    const finalTotal = seatTotal + comboTotal - discountAmount;
     totalPriceEl.textContent = `${finalTotal.toLocaleString('vi-VN')} VND`;
 }
 
@@ -330,50 +562,39 @@ async function confirmBooking(movieId) {
     }
     const movie = findMovieInMock(movieId);
     const bookingId = `CGV${Math.floor(Math.random() * 100000)}`;
+    
+    const finalTotalStr = document.getElementById('total-price').textContent;
+    const finalTotalPrice = parseInt(finalTotalStr.replace(/\D/g,''));
+
     const bookingDetails = {
         bookingId: bookingId,
         movie: {
             title: movie ? movie.title : 'Phim đã chọn',
-            imageUrl: movie ? movie.imageUrl : ''
+            imageUrl: movie ? (movie.imageUrl || DEFAULT_POSTER) : DEFAULT_POSTER
         },
         date: selectedDate,
         showtime: selectedShowtime,
         seats: selectedSeats, 
-        combos: finalCombos
+        combos: finalCombos,
+        customer: { name, phone },
+        voucher: appliedVoucher,
+        discount: discountAmount,
+        totalPrice: finalTotalPrice
     };
     try {
         sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
-        document.getElementById('booking-message').textContent = 'Đã lưu thông tin, đang chuyển đến trang thanh toán...';
+        const msg = document.getElementById('booking-message');
+        if(msg) msg.textContent = 'Đang chuyển đến trang thanh toán...';
         setTimeout(() => {
             window.location.href = 'payment.html';
         }, 1500);
     } catch (err) {
         console.error('Lỗi khi lưu sessionStorage:', err);
-        window.alert('Lỗi khi lưu chi tiết vé: ' + (err.message || err));
+        window.alert('Lỗi: ' + err.message);
     }
 }
 
-// --- CÁC HÀM HELPER (Cho header/modal/search) ---
-async function loadComponent(placeholderId, componentUrl) {
-    try {
-        const response = await fetch(componentUrl);
-        if (!response.ok) {
-            throw new Error(`Không thể tải ${componentUrl}: ${response.statusText}`);
-        }
-        const html = await response.text();
-        const placeholder = document.querySelector(placeholderId);
-        if (placeholder) {
-            placeholder.innerHTML = html;
-        }
-    } catch (error) {
-        console.error(`Lỗi khi tải component ${componentUrl}:`, error);
-        const placeholder = document.querySelector(placeholderId);
-        if (placeholder) {
-            placeholder.innerHTML = `<p style="color:red;">Lỗi tải ${componentUrl}</p>`;
-        }
-    }
-}
-
+// --- CÁC HÀM HELPER (Header/Modal/Login) ---
 function addHeaderScrollEffect() {
     const header = document.querySelector('.main-header');
     if (!header) return;
@@ -388,16 +609,7 @@ function setupModalListeners() {
     const closeBtn = document.getElementById('modal-close-btn');
     const trailerIframe = document.getElementById('trailer-iframe');
     if (!modal || !closeBtn || !trailerIframe) return;
-    document.body.addEventListener('click', (event) => {
-        const openBtn = event.target.closest('.btn-open-modal');
-        if (openBtn) {
-            const url = openBtn.dataset.trailerUrl;
-            if (url) {
-                trailerIframe.src = `${url}?autoplay=1`;
-                modal.classList.add('active');
-            }
-        }
-    });
+    
     function closeModal() {
         modal.classList.remove('active');
         trailerIframe.src = '';
@@ -423,9 +635,7 @@ function setupHeaderSearchListeners() {
 function setupUserMenuListeners() {
     const btn = document.getElementById('user-menu-btn');
     const dropdown = document.getElementById('user-dropdown');
-    if (!btn || !dropdown) {
-        return;
-    }
+    if (!btn || !dropdown) return;
     btn.addEventListener('click', (e) => {
         e.stopPropagation(); 
         dropdown.classList.toggle('active');
@@ -439,23 +649,11 @@ function setupUserMenuListeners() {
     });
 }
 
-
-/* ==========================================================
-   ⭐⭐⭐ CÁC HÀM CHUẨN XỬ LÝ LOGIN/LOGOUT ⭐⭐⭐
-   (Dán 3 hàm mới vào đây)
-   ========================================================== */
-
-/**
- * ⭐ HÀM CHUẨN 1: Kiểm tra trạng thái đăng nhập
- */
 async function checkLoginStatus() {
     try {
         const res = await fetch(
             "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/me.php",
-            {
-                method: "GET",
-                credentials: "include" 
-            }
+            { method: "GET", credentials: "include" }
         );
         const data = await res.json();
         updateHeaderUI(res.ok ? data.username : null);
@@ -465,22 +663,16 @@ async function checkLoginStatus() {
     }
 }
 
-/**
- * ⭐ HÀM CHUẨN 2: Cập nhật UI Header
- */
 function updateHeaderUI(username) {
     const userMenuBtn = document.getElementById("user-menu-btn");
     const userDropdown = document.getElementById("user-dropdown");
-
     if (!userMenuBtn || !userDropdown) return;
 
     if (username) {
-        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i> Chào, ${username}`;
+        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i>Xin chào, ${username} !`;
         userDropdown.innerHTML = `
             <a href="profile.html">Tài khoản của tôi</a> <a href="#" id="logout-btn">Đăng xuất</a>
-
         `;
-        // Phải gọi lại setupLogoutListener() ngay sau khi tạo nút
         setupLogoutListener();
     } else {
         userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i>`;
@@ -491,19 +683,17 @@ function updateHeaderUI(username) {
     }
 }
 
-/**
- * ⭐ HÀM CHUẨN 3: Gán sự kiện cho nút Đăng xuất
- */
 function setupLogoutListener() {
     const btn = document.getElementById("logout-btn");
     if (!btn) return;
-
     btn.addEventListener("click", async (e) => {
         e.preventDefault();
-        await fetch(
-            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/login.php",
-            { credentials: "include" }
-        );
+        try {
+            await fetch(
+                "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/login.php",
+                { credentials: "include" }
+            );
+        } catch(e) {}
         updateHeaderUI(null); 
         window.location.href = "index.html";
     });

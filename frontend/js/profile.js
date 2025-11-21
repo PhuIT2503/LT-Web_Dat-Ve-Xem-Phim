@@ -26,6 +26,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     addHeaderScrollEffect();
     setupUserMenuListeners();
     setupHeaderSearchListeners();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabName = urlParams.get('tab');
+    if (tabName) {
+        const tabBtn = document.querySelector(`.menu-btn[data-tab="${tabName}"]`);
+        if (tabBtn) {
+            // Kích hoạt sự kiện click vào tab tương ứng
+            tabBtn.click();
+        }
+    }
 });
 
 // --- LOGIC TAB CHUYỂN ĐỔI ---
@@ -63,22 +73,36 @@ function populateUserData(user) {
 }
 
 // --- GIẢ LẬP VOUCHER ---
-function renderMockVouchers() {
-    const vouchers = [
-        { code: "CINE50", desc: "Giảm 50% vé xem phim", exp: "30/12/2025" },
-        { code: "FREECORN", desc: "Tặng 1 bắp ngọt nhỏ", exp: "15/05/2025" },
-        { code: "BIRTHDAY", desc: "Vé miễn phí tháng sinh nhật", exp: "01/01/2026" }
-    ];
-
+async function renderMockVouchers() {
     const container = document.getElementById('voucher-list');
-    container.innerHTML = vouchers.map(v => `
-        <div class="voucher-item">
-            <span class="voucher-code">${v.code}</span>
-            <p>${v.desc}</p>
-            <small style="color: var(--grey-color)">HSD: ${v.exp}</small>
-            <button class="btn btn-primary" style="font-size:0.8rem; padding: 5px 10px; margin-top: 10px; width: 100%">Sao chép</button>
-        </div>
-    `).join('');
+    container.innerHTML = '<p>Đang tải ưu đãi...</p>';
+
+    try {
+        const res = await fetch('http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/vouchers/list.php');
+        const vouchers = await res.json();
+        
+        if (!vouchers || vouchers.length === 0) {
+            container.innerHTML = '<p>Bạn chưa có voucher nào.</p>';
+            return;
+        }
+
+        container.innerHTML = vouchers.map(v => {
+            const expDate = new Date(v.exp).toLocaleDateString('vi-VN');
+            return `
+            <div class="voucher-item">
+                <span class="voucher-code">${v.code}</span>
+                <p>${v.desc}</p>
+                <p style="color: var(--primary-color); font-weight:bold; margin: 5px 0;">Giảm: ${v.discount_display}</p>
+                <small style="color: var(--grey-color)">HSD: ${expDate}</small>
+                <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${v.code}')" style="font-size:0.8rem; padding: 5px 10px; margin-top: 10px; width: 100%">Sao chép</button>
+            </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p style="color:red">Không thể tải danh sách voucher.</p>';
+    }
 }
 
 // --- GIẢ LẬP LỊCH SỬ ---
@@ -186,6 +210,20 @@ function setupUserMenuListeners() {
 /**
  * ⭐ HÀM CHUẨN 1: Kiểm tra trạng thái đăng nhập
  */
+
+function setupHeaderSearchListeners() {
+    const input = document.getElementById('header-search-input');
+    const btn = document.getElementById('header-search-btn');
+    if (!input || !btn) return;
+
+    function doSearch() {
+        const q = input.value.trim();
+        window.location.href = q === '' ? 'movies.html' : `movies.html?q=${encodeURIComponent(q)}`;
+    }
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+    btn.addEventListener('click', doSearch);
+}
+
 async function checkLoginStatus() {
     try {
         const res = await fetch(
@@ -213,7 +251,7 @@ function updateHeaderUI(username) {
     if (!userMenuBtn || !userDropdown) return;
 
     if (username) {
-        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i> Chào, ${username}`;
+        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i> Xin chào, ${username} !`;
         userDropdown.innerHTML = `
             <a href="#">Tài khoản của tôi</a>
             <a href="#" id="logout-btn">Đăng xuất</a>

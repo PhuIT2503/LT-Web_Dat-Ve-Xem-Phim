@@ -203,7 +203,7 @@ function updateHeaderUI(username) {
     if (!userMenuBtn || !userDropdown) return;
 
     if (username) {
-        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i> Chào, ${username}`;
+        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i>Xin chào, ${username} !`;
         userDropdown.innerHTML = `
             <a href="profile.html">Tài khoản của tôi</a> <a href="#" id="logout-btn">Đăng xuất</a>
 
