@@ -99,11 +99,38 @@ function initializePaymentPage() {
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
         
         // Giả lập gọi API thanh toán (chờ 2.5 giây)
-        setTimeout(() => {
-            // Hiện modal thành công
+        setTimeout(async () => {
+            try {
+                // 1. Chuẩn bị dữ liệu để lưu
+                // Lấy thông tin từ sessionStorage (đã lưu ở trang booking.html)
+                const dataString = sessionStorage.getItem('bookingDetails');
+                if (dataString) {
+                    const bookingData = JSON.parse(dataString);
+                    
+                    // Tạo nội dung tóm tắt (VD: Mai (2 vé) + Combo bắp)
+                    let itemSummary = bookingData.movie.title;
+                    if (bookingData.seats && bookingData.seats.length > 0) {
+                        itemSummary += ` (${bookingData.seats.length} vé)`;
+                    }
+                    
+                    // Gọi API lưu lịch sử
+                    await fetch('http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/transactions/create.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include', // Quan trọng để lấy session user_id
+                        body: JSON.stringify({
+                            booking_code: bookingData.bookingId,
+                            item_name: itemSummary,
+                            total_amount: bookingData.totalPrice
+                        })
+                    });
+                }
+            } catch (error) {
+                console.error("Lỗi khi lưu lịch sử giao dịch:", error);
+            }
+
+            // 2. Hiện modal thành công và xóa dữ liệu tạm
             document.getElementById('payment-success-modal').style.display = 'flex';
-            
-            // Xóa dữ liệu tạm
             sessionStorage.removeItem('bookingDetails');
 
         }, 2500);

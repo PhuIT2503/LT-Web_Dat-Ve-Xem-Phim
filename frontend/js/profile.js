@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupTabs();
     populateUserData(userData);
     renderMockVouchers();
-    renderMockHistory();
+    renderHistory();
     setupLogoutBtn(); // Nút logout ở sidebar
     
     // Setup header logic (search, user menu...)
@@ -72,7 +72,7 @@ function populateUserData(user) {
     document.getElementById('profile-dob').value = "1999-01-01";
 }
 
-// --- GIẢ LẬP VOUCHER ---
+// API VOUCHER 
 async function renderMockVouchers() {
     const container = document.getElementById('voucher-list');
     container.innerHTML = '<p>Đang tải ưu đãi...</p>';
@@ -105,24 +105,57 @@ async function renderMockVouchers() {
     }
 }
 
-// --- GIẢ LẬP LỊCH SỬ ---
-function renderMockHistory() {
-    const history = [
-        { id: "CGV99281", item: "Mai (2 Vé)", date: "15/02/2025", total: "180,000", status: "Thành công" },
-        { id: "CGV88123", item: "Combo Bắp Nước", date: "15/02/2025", total: "79,000", status: "Thành công" },
-        { id: "CGV77111", item: "Đào, Phở và Piano", date: "10/01/2025", total: "90,000", status: "Đã hủy" },
-    ];
-
+// --API LỊCH SỬ ---
+async function renderHistory() {
     const container = document.getElementById('history-list');
-    container.innerHTML = history.map(h => `
-        <tr>
-            <td>#${h.id}</td>
-            <td>${h.item}</td>
-            <td>${h.date}</td>
-            <td>${h.total} đ</td>
-            <td class="${h.status === 'Thành công' ? 'status-success' : 'status-pending'}">${h.status}</td>
-        </tr>
-    `).join('');
+    if (!container) return;
+
+    // Hiển thị trạng thái đang tải
+    container.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">Đang tải lịch sử...</td></tr>';
+
+    try {
+        // Gọi API lấy danh sách (Nhớ đổi đường dẫn nếu bạn đặt tên folder khác)
+        const res = await fetch('http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/transactions/list.php', {
+            method: 'GET',
+            credentials: 'include' // ⭐ QUAN TRỌNG: Để gửi kèm Session User ID
+        });
+
+        const history = await res.json();
+
+        // Nếu không có dữ liệu
+        if (!history || history.length === 0) {
+            container.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">Bạn chưa có giao dịch nào.</td></tr>';
+            return;
+        }
+
+        // Render dữ liệu ra bảng
+        container.innerHTML = history.map(h => `
+            <tr>
+                <td class="order-id">#${h.id}</td>
+                <td>${h.item}</td>
+                <td>${h.date}</td>
+                <td class="order-total">${h.total}</td>
+                <td>
+                    <span class="status-badge ${getStatusClass(h.status)}">
+                        ${h.status}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (err) {
+        console.error("Lỗi tải lịch sử:", err);
+        container.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #ff4757; padding: 20px;">Không thể tải lịch sử giao dịch.</td></tr>';
+    }
+}
+
+// Hàm phụ trợ để chọn màu sắc cho trạng thái
+function getStatusClass(status) {
+    // Chuẩn hóa text về chữ thường để so sánh
+    const s = (status || '').toLowerCase();
+    if (s.includes('thành công') || s.includes('success')) return 'status-success';
+    if (s.includes('chờ') || s.includes('pending')) return 'status-pending';
+    return 'status-cancel'; // Mặc định là màu đỏ/xám nếu hủy hoặc lỗi
 }
 
 // --- LOGIC LOGOUT RIÊNG CHO SIDEBAR ---
