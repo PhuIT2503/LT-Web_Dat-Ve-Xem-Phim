@@ -19,24 +19,43 @@ function initializePaymentPage() {
     }
     const bookingData = JSON.parse(dataString);
     
-    // 1. Hiển thị Ghế và Giá (Cũ)
+    // 1. Hiển thị Ghế
     document.getElementById('summary-seat-list').textContent = bookingData.seat_labels;
-    document.getElementById('summary-seat-total').textContent = bookingData.total_amount.toLocaleString('vi-VN') + " VND";
+    
+    // 2. Hiển thị Giá Vé Riêng
+    const seatPrice = bookingData.seat_ids.length * 90000; // Hoặc lấy từ data nếu muốn
+    document.getElementById('summary-seat-total').textContent = seatPrice.toLocaleString('vi-VN') + " VND";
+
+    // ⭐ 3. HIỂN THỊ COMBO (MỚI) ⭐
+    const comboContainer = document.getElementById('combo-summary-list');
+    if (comboContainer) {
+        if (bookingData.combos && bookingData.combos.length > 0) {
+            let html = '';
+            bookingData.combos.forEach(c => {
+                html += `
+                    <div class="summary-item">
+                        <span>${c.qty} x ${c.name}</span>
+                        <span>${(c.qty * c.price).toLocaleString('vi-VN')} VND</span>
+                    </div>
+                `;
+            });
+            comboContainer.innerHTML = html;
+        } else {
+            comboContainer.innerHTML = ''; // Xóa nếu không có combo
+        }
+    }
+
+    // 4. Hiển thị Tổng Tiền Cuối Cùng (Đã bao gồm combo)
     document.getElementById('summary-final-total').textContent = bookingData.total_amount.toLocaleString('vi-VN') + " VND";
 
-    // 2. ⭐ HIỂN THỊ THÔNG TIN PHIM (MỚI) ⭐
+    // 5. Thông tin phim, ngày giờ, poster (Giữ nguyên)
     document.getElementById('summary-title').textContent = bookingData.movie_title || "Phim chưa xác định";
-    
     if (bookingData.movie_image) {
         document.getElementById('summary-poster').src = bookingData.movie_image;
     }
-    
-    // Hiển thị Ngày & Giờ chiếu
     if (bookingData.show_date && bookingData.show_time) {
         document.getElementById('summary-date-time').textContent = `Ngày: ${bookingData.show_date} | Suất: ${bookingData.show_time}`;
     }
-
-    // Mã đặt vé tạm thời (Random cho đẹp)
     document.getElementById('summary-booking-id').textContent = "CGV" + Math.floor(100000 + Math.random() * 900000);
 }
 
@@ -46,20 +65,24 @@ async function processRealPayment() {
     if (!dataString) return;
 
     const bookingData = JSON.parse(dataString);
-    const custName = document.getElementById('card-name')?.value || "Khách hàng"; // Lấy tên từ form thẻ hoặc mặc định
 
-    // Payload gửi lên PHP
+    // 1. Lấy tên và SĐT từ dữ liệu đã lưu ở bước trước (booking.js)
+    // Ưu tiên tên nhập ở bước Booking, nếu không có thì mới lấy "Khách hàng"
+    const finalName = bookingData.customer_name || document.getElementById('card-name')?.value || "Khách hàng";
+    const finalPhone = bookingData.customer_phone || ""; 
+
+    // 2. Payload gửi lên PHP
     const payload = {
         showtime_id: bookingData.showtime_id,
-        seats: bookingData.seat_ids, // Mảng ID ghế
-        customer_name: custName,
-        customer_phone: "0909000111", // Có thể lấy từ input nếu muốn
+        seats: bookingData.seat_ids, 
+        customer_name: finalName,   // <--- Phải dùng biến này
+        customer_phone: finalPhone, // <--- QUAN TRỌNG: Phải dùng biến này, KHÔNG ĐƯỢC ĐỂ SỐ CỨNG
         total_amount: bookingData.total_amount
     };
 
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
-
+    
     try {
         const res = await fetch(`${API_BASE_URL}/bookings/create.php`, {
             method: 'POST',
@@ -76,7 +99,6 @@ async function processRealPayment() {
             document.getElementById('payment-success-modal').style.display = 'flex';
             sessionStorage.removeItem('bookingDetails');
             
-            // Nút về trang chủ
             document.getElementById('back-to-home').addEventListener('click', () => {
                 window.location.href = 'index.html';
             });
