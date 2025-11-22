@@ -1,9 +1,9 @@
 <?php
 class Database {
     private $host = "localhost";
-    private $db_name = "cinema_db"; 
-    private $username = "root";     
-    private $password = "";         
+    private $db_name = "cinema_db";
+    private $username = "root";
+    private $password = "";
     public $conn;
 
     public function getConnection() {
@@ -15,8 +15,13 @@ class Database {
                 $this->password
             );
             $this->conn->exec("set names utf8");
+            
+            // --- THÊM DÒNG NÀY ĐỂ BẬT BÁO LỖI ---
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            // ------------------------------------
+            
         } catch (PDOException $exception) {
-            echo " Kết nối thất bại: " . $exception->getMessage();
+            echo "Kết nối thất bại: " . $exception->getMessage();
         }
         return $this->conn;
     }

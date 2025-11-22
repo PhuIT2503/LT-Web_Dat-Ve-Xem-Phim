@@ -4,12 +4,11 @@
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
-    'domain' => 'localhost',
-    'secure' => false,   // localhost không có HTTPS → để false
+    // 'domain' => 'localhost',  <-- XÓA HOẶC COMMENT DÒNG NÀY ĐI
+    'secure' => false,
     'httponly' => true,
-    'samesite' => 'Lax' // ⭐ BẮT BUỘC: cho phép cookie cross-site
+    'samesite' => 'Lax'
 ]);
-
 session_start();
 
 // ⭐ CORS CHUẨN CHO SESSION
