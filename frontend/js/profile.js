@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadComponent("#modal-placeholder", "components/modal-trailer.html")
     ]);
 
-    // 2. Kiểm tra đăng nhập & Lấy thông tin user
+    // 2. Kiểm tra đăng nhập
     const userData = await checkLoginStatusReturnData();
     
     if (!userData) {
@@ -16,53 +16,119 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // 3. Khởi tạo các chức năng
-    setupTabs();
-    populateUserData(userData);
-    renderMockVouchers();
-    renderMockHistory();
-    setupLogoutBtn(); // Nút logout ở sidebar
+    setupTabs();                 // <-- QUAN TRỌNG: Giúp bấm chuyển tab được
+    populateUserData(userData);  // Điền thông tin user
+    renderMockVouchers();        // Voucher giả lập
     
-    // Setup header logic (search, user menu...)
+    // Gọi hàm lấy lịch sử thật từ Database
+    await fetchBookingHistory(); 
+    
+    // Các chức năng phụ trợ
+    setupLogoutBtn();
     addHeaderScrollEffect();
     setupUserMenuListeners();
     setupHeaderSearchListeners();
 });
 
-// --- LOGIC TAB CHUYỂN ĐỔI ---
+/* =========================================
+   CÁC HÀM CHỨC NĂNG CHÍNH (PROFILE)
+   ========================================= */
+
+// --- 1. LOGIC TAB CHUYỂN ĐỔI (Xử lý click menu bên trái) ---
 function setupTabs() {
     const btns = document.querySelectorAll('.menu-btn:not(.logout-btn)');
     const sections = document.querySelectorAll('.content-section');
 
     btns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Remove active class
+            // Xóa class active cũ ở tất cả nút và nội dung
             btns.forEach(b => b.classList.remove('active'));
             sections.forEach(s => s.classList.remove('active'));
 
-            // Add active class
+            // Thêm class active cho nút vừa bấm
             btn.classList.add('active');
+            
+            // Hiện nội dung tương ứng
             const tabId = btn.dataset.tab;
-            document.getElementById(`tab-${tabId}`).classList.add('active');
+            const section = document.getElementById(`tab-${tabId}`);
+            if (section) {
+                section.classList.add('active');
+            }
         });
     });
 }
 
-// --- ĐIỀN DỮ LIỆU USER (Từ API thật + Giả lập) ---
+// --- 2. ĐIỀN DỮ LIỆU USER ---
 function populateUserData(user) {
     // Sidebar
-    document.getElementById('sidebar-username').textContent = user.username;
-    document.getElementById('sidebar-email').textContent = user.email;
+    const sbName = document.getElementById('sidebar-username');
+    const sbEmail = document.getElementById('sidebar-email');
+    if(sbName) sbName.textContent = user.username;
+    if(sbEmail) sbEmail.textContent = user.email;
 
     // Form Inputs
-    document.getElementById('profile-name').value = user.username;
-    document.getElementById('profile-email').value = user.email;
+    const inpName = document.getElementById('profile-name');
+    const inpEmail = document.getElementById('profile-email');
+    if(inpName) inpName.value = user.username;
+    if(inpEmail) inpEmail.value = user.email;
     
-    // Dữ liệu giả lập (vì backend chưa có field này)
-    document.getElementById('profile-phone').value = "0987654321"; 
-    document.getElementById('profile-dob').value = "1999-01-01";
+    // Dữ liệu giả lập (vì database chưa có cột này)
+    const inpPhone = document.getElementById('profile-phone');
+    const inpDob = document.getElementById('profile-dob');
+    if(inpPhone) inpPhone.value = "0987654321"; 
+    if(inpDob) inpDob.value = "1999-01-01";
 }
 
-// --- GIẢ LẬP VOUCHER ---
+// --- 3. LẤY LỊCH SỬ TỪ DATABASE (HÀM QUAN TRỌNG) ---
+async function fetchBookingHistory() {
+    const container = document.getElementById('history-list');
+    if(!container) return;
+
+    container.innerHTML = '<tr><td colspan="5" style="text-align:center;">Đang tải dữ liệu...</td></tr>';
+
+    try {
+        const res = await fetch(
+            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/bookings/list.php", 
+            {
+                method: "GET",
+                credentials: "include" // Quan trọng để gửi session
+            }
+        );
+
+        if (!res.ok) throw new Error("Lỗi tải lịch sử");
+
+        const historyData = await res.json();
+
+        if (historyData.length === 0) {
+            container.innerHTML = '<tr><td colspan="5" style="text-align:center;">Bạn chưa có giao dịch nào.</td></tr>';
+            return;
+        }
+
+        // Map trạng thái sang HTML badge
+        const getStatusBadge = (status) => {
+            if (status === 'success') return '<span class="status-badge status-success">Thành công</span>';
+            if (status === 'pending') return '<span class="status-badge status-pending">Đang chờ</span>';
+            return '<span class="status-badge status-cancel">Đã hủy</span>';
+        };
+
+        // Render HTML
+        container.innerHTML = historyData.map(h => `
+            <tr>
+                <td class="order-id">#${h.id}</td>
+                <td style="font-weight: 600;">${h.item}</td>
+                <td>${h.date}</td>
+                <td class="order-total">${h.total}</td>
+                <td>${getStatusBadge(h.status)}</td>
+            </tr>
+        `).join('');
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<tr><td colspan="5" style="text-align:center; color: red;">Không thể tải lịch sử giao dịch.</td></tr>';
+    }
+}
+
+// --- 4. GIẢ LẬP VOUCHER (GIỮ NGUYÊN) ---
 function renderMockVouchers() {
     const vouchers = [
         { code: "CINE50", desc: "Giảm 50% vé xem phim", exp: "30/12/2025" },
@@ -71,6 +137,8 @@ function renderMockVouchers() {
     ];
 
     const container = document.getElementById('voucher-list');
+    if (!container) return;
+    
     container.innerHTML = vouchers.map(v => `
         <div class="voucher-item">
             <span class="voucher-code">${v.code}</span>
@@ -81,29 +149,12 @@ function renderMockVouchers() {
     `).join('');
 }
 
-// --- GIẢ LẬP LỊCH SỬ ---
-function renderMockHistory() {
-    const history = [
-        { id: "CGV99281", item: "Mai (2 Vé)", date: "15/02/2025", total: "180,000", status: "Thành công" },
-        { id: "CGV88123", item: "Combo Bắp Nước", date: "15/02/2025", total: "79,000", status: "Thành công" },
-        { id: "CGV77111", item: "Đào, Phở và Piano", date: "10/01/2025", total: "90,000", status: "Đã hủy" },
-    ];
-
-    const container = document.getElementById('history-list');
-    container.innerHTML = history.map(h => `
-        <tr>
-            <td>#${h.id}</td>
-            <td>${h.item}</td>
-            <td>${h.date}</td>
-            <td>${h.total} đ</td>
-            <td class="${h.status === 'Thành công' ? 'status-success' : 'status-pending'}">${h.status}</td>
-        </tr>
-    `).join('');
-}
-
-// --- LOGIC LOGOUT RIÊNG CHO SIDEBAR ---
+// --- 5. LOGIC LOGOUT RIÊNG CHO SIDEBAR ---
 function setupLogoutBtn() {
-    document.getElementById('profile-logout-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('profile-logout-btn');
+    if (!btn) return;
+    
+    btn.addEventListener('click', async () => {
         if(confirm("Bạn có chắc muốn đăng xuất?")) {
             await fetch("http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/logout.php", { credentials: "include" });
             window.location.href = "index.html";
@@ -111,7 +162,7 @@ function setupLogoutBtn() {
     });
 }
 
-// --- HÀM HELPER: Lấy data user thay vì chỉ update UI ---
+// --- 6. HÀM HELPER: Lấy data user ---
 async function checkLoginStatusReturnData() {
     try {
         const res = await fetch("http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/me.php", { method: "GET", credentials: "include" });
@@ -123,14 +174,20 @@ async function checkLoginStatusReturnData() {
     }
 }
 
-// --- COPY CÁC HÀM HELPER TỪ MAIN.JS (Để header hoạt động) ---
+/* =========================================
+   CÁC HÀM HELPER CHUNG (HEADER/SEARCH/MODAL)
+   ========================================= */
+
 async function loadComponent(placeholderId, componentUrl) {
     try {
+        const placeholder = document.querySelector(placeholderId);
+        if(!placeholder) return;
         const response = await fetch(componentUrl);
         const html = await response.text();
-        document.querySelector(placeholderId).innerHTML = html;
+        placeholder.innerHTML = html;
     } catch (error) { console.error(error); }
 }
+
 function addHeaderScrollEffect() {
     const header = document.querySelector(".main-header");
     if (!header) return;
@@ -140,7 +197,6 @@ function addHeaderScrollEffect() {
     });
 }
 
-/** ---------------- MODAL TRAILER ------------------- */
 function setupModalListeners() {
     const modal = document.getElementById("trailer-modal");
     const closeBtn = document.getElementById("modal-close-btn");
@@ -151,8 +207,11 @@ function setupModalListeners() {
     document.body.addEventListener("click", e => {
         const btn = e.target.closest(".btn-open-modal");
         if (btn) {
-            iframe.src = `${btn.dataset.trailerUrl}?autoplay=1`;
-            modal.classList.add("active");
+            const url = btn.dataset.trailerUrl;
+            if(url) {
+                iframe.src = `${url}?autoplay=1`;
+                modal.classList.add("active");
+            }
         }
     });
 
@@ -165,84 +224,33 @@ function setupModalListeners() {
     modal.addEventListener("click", e => e.target === modal && close());
 }
 
-/** ---------------- USER MENU (Sự kiện Click) ------------------- */
+function setupHeaderSearchListeners() {
+    const input = document.getElementById('header-search-input');
+    const btn = document.getElementById('header-search-btn');
+    if (!input || !btn) return;
+    function doSearch() {
+        const q = input.value.trim();
+        window.location.href = q === '' ? 'movies.html' : `movies.html?q=${encodeURIComponent(q)}`;
+    }
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+    btn.addEventListener('click', doSearch);
+}
+
 function setupUserMenuListeners() {
-    const btn = document.getElementById("user-menu-btn");
-    const dropdown = document.getElementById("user-dropdown");
+    const btn = document.getElementById('user-menu-btn');
+    const dropdown = document.getElementById('user-dropdown');
     if (!btn || !dropdown) return;
 
-    btn.addEventListener("click", e => {
-        e.stopPropagation();
-        dropdown.classList.toggle("active");
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation(); 
+        dropdown.classList.toggle('active');
     });
 
-    window.addEventListener("click", () => dropdown.classList.remove("active"));
-}
-
-/* ==========================================================
-   ⭐⭐⭐ CÁC HÀM CHUẨN XỬ LÝ LOGIN/LOGOUT ⭐⭐⭐
-   ========================================================== */
-
-/**
- * ⭐ HÀM CHUẨN 1: Kiểm tra trạng thái đăng nhập
- */
-async function checkLoginStatus() {
-    try {
-        const res = await fetch(
-            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/me.php",
-            {
-                method: "GET",
-                credentials: "include" 
+    window.addEventListener('click', (e) => {
+        if (dropdown.classList.contains('active')) {
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('active');
             }
-        );
-        const data = await res.json();
-        updateHeaderUI(res.ok ? data.username : null);
-    } catch (err) {
-        console.error("Lỗi check login:", err);
-        updateHeaderUI(null);
-    }
-}
-
-/**
- * ⭐ HÀM CHUẨN 2: Cập nhật UI Header
- */
-function updateHeaderUI(username) {
-    const userMenuBtn = document.getElementById("user-menu-btn");
-    const userDropdown = document.getElementById("user-dropdown");
-
-    if (!userMenuBtn || !userDropdown) return;
-
-    if (username) {
-        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i> Chào, ${username}`;
-        userDropdown.innerHTML = `
-            <a href="#">Tài khoản của tôi</a>
-            <a href="#" id="logout-btn">Đăng xuất</a>
-        `;
-        // Phải gọi lại setupLogoutListener() ngay sau khi tạo nút
-        setupLogoutListener();
-    } else {
-        userMenuBtn.innerHTML = `<i class="fa-solid fa-user"></i>`;
-        userDropdown.innerHTML = `
-            <a href="login.html">Đăng nhập</a>
-            <a href="register.html">Đăng kí</a>
-        `;
-    }
-}
-
-/**
- * ⭐ HÀM CHUẨN 3: Gán sự kiện cho nút Đăng xuất
- */
-function setupLogoutListener() {
-    const btn = document.getElementById("logout-btn");
-    if (!btn) return;
-
-    btn.addEventListener("click", async (e) => {
-        e.preventDefault();
-        await fetch(
-            "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api/auth/logout.php",
-            { credentials: "include" }
-        );
-        updateHeaderUI(null); 
-        window.location.href = "index.html";
+        }
     });
 }
