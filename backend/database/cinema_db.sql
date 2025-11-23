@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 19, 2025 at 04:34 AM
+-- Generation Time: Nov 23, 2025 at 06:34 AM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -267,6 +267,30 @@ CREATE TABLE `showtimes` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `transaction_history`
+--
+
+CREATE TABLE `transaction_history` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `booking_code` varchar(50) NOT NULL COMMENT 'Mã đơn hàng (VD: CGV12345)',
+  `item_name` varchar(255) NOT NULL COMMENT 'Tên phim hoặc Combo',
+  `total_amount` int(11) NOT NULL COMMENT 'Tổng tiền',
+  `booking_date` datetime DEFAULT current_timestamp() COMMENT 'Ngày đặt',
+  `status` varchar(50) DEFAULT 'Thành công' COMMENT 'Trạng thái'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `transaction_history`
+--
+
+INSERT INTO `transaction_history` (`id`, `user_id`, `booking_code`, `item_name`, `total_amount`, `booking_date`, `status`) VALUES
+(5, 5, 'CGV34496', 'Lật Mặt 6: Tấm Vé Định Mệnh (2 vé)', 225000, '2025-11-21 22:05:53', 'Thành công'),
+(6, 5, 'CGV77930', 'Con Nhót Mót Chồng (2 vé)', 225000, '2025-11-23 12:33:32', 'Thành công');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -284,8 +308,40 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `created_at`) VALUES
-(1, 'hienminh7383', 'hienminh7383@gmail.com', '$2y$10$X31kJINyzwSVX32ZlAc.ae284jw0HvKm6z5q8cLhS171AqwnIExvm', 'user', '2025-11-13 11:46:05'),
-(2, 'admin', 'admin123@gmail.com', '$2y$10$MTPlin8WcMhdbMl/ahkWDOrKiJrrTeP5k1AXZNKhgBbOpocR0E5Zy', 'user', '2025-11-14 03:13:48');
+(1, 'hienminh7383', 'hienminh7383@gmail.com', '$2y$10$X31kJINyzwSVX32ZlAc.ae284jw0HvKm6z5q8cLhS171AqwnIExvm', 'admin', '2025-11-13 11:46:05'),
+(2, 'admin', 'admin123@gmail.com', '$2y$10$MTPlin8WcMhdbMl/ahkWDOrKiJrrTeP5k1AXZNKhgBbOpocR0E5Zy', 'user', '2025-11-14 03:13:48'),
+(4, 'Bá Thành', 'huynhbathanh2110200@gmail.com', '$2y$10$6emhsr.f9MWtmQHOQGFUh.GB8R6mxJvDUhzkdKGFGuFVJYkBR.tfy', 'user', '2025-11-21 12:05:56'),
+(5, 'Bá Thành', 'huynhbathanh21102005@gmail.com', '$2y$10$YSjdfdg4x8S33GfYDcNR8OCn8VE9eIdM8DcLptwaptRhpdA4wYd9q', 'user', '2025-11-21 12:06:19');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `voucher`
+--
+
+CREATE TABLE `voucher` (
+  `id` int(11) NOT NULL,
+  `noi_dung` varchar(255) NOT NULL,
+  `mo_ta` text DEFAULT NULL,
+  `han_su_dung` date NOT NULL,
+  `giam_gia` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `voucher`
+--
+
+INSERT INTO `voucher` (`id`, `noi_dung`, `mo_ta`, `han_su_dung`, `giam_gia`) VALUES
+(1, 'GIAM10K', 'Giảm giá 10,000 VND cho đơn đặt vé bất kỳ', '2025-12-31', '10000'),
+(2, 'GIAM20K', 'Giảm giá 20,000 VND cho đơn đặt vé trên 100,000 VND', '2025-12-31', '20000'),
+(3, 'GIAM30K', 'Giảm giá 30,000 VND cho đơn đặt vé trên 150,000 VND', '2025-12-31', '30000'),
+(4, 'GIAM40K', 'Giảm giá 40,000 VND cho đơn đặt vé trên 200,000 VND', '2025-12-31', '40000'),
+(5, 'GIAM50K', 'Giảm giá 50,000 VND cho đơn đặt vé trên 250,000 VND', '2025-12-31', '50000'),
+(6, 'SALE10', 'Giảm 10% cho mọi loại vé', '2025-12-31', '10%'),
+(7, 'SALE15', 'Giảm 15% cho vé xem phim 2D hoặc 3D', '2025-12-31', '15%'),
+(8, 'SALE20', 'Giảm 20% cho vé đôi hoặc vé combo', '2025-12-31', '20%'),
+(9, 'SALE30', 'Giảm 30% cho hóa đơn trên 300,000 VND', '2025-12-31', '30%'),
+(10, 'SALE50', 'Giảm 50% cho hóa đơn trên 500,000 VND (voucher cao nhất)', '2025-12-31', '50%');
 
 --
 -- Indexes for dumped tables
@@ -335,11 +391,24 @@ ALTER TABLE `showtimes`
   ADD KEY `room_id` (`room_id`);
 
 --
+-- Indexes for table `transaction_history`
+--
+ALTER TABLE `transaction_history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Indexes for table `voucher`
+--
+ALTER TABLE `voucher`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -382,10 +451,22 @@ ALTER TABLE `showtimes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `transaction_history`
+--
+ALTER TABLE `transaction_history`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `voucher`
+--
+ALTER TABLE `voucher`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Constraints for dumped tables
@@ -417,6 +498,12 @@ ALTER TABLE `seats`
 ALTER TABLE `showtimes`
   ADD CONSTRAINT `showtimes_ibfk_1` FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`),
   ADD CONSTRAINT `showtimes_ibfk_2` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`);
+
+--
+-- Constraints for table `transaction_history`
+--
+ALTER TABLE `transaction_history`
+  ADD CONSTRAINT `fk_transaction_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -1,13 +1,18 @@
 const API_BASE_URL = "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api";
 
+// Biến toàn cục để lưu giá gốc và voucher
+let originalTotalAmount = 0; 
+let currentDiscount = 0;
+
 document.addEventListener('DOMContentLoaded', async () => {
     await checkLoginStatus();
     initializePaymentPage();
-    
-    // Tab chuyển đổi phương thức thanh toán
     setupPaymentTabs();
 
     document.getElementById('confirm-payment')?.addEventListener('click', processRealPayment);
+    
+    // ⭐ CODE MỚI: Gán sự kiện nút áp dụng voucher
+    document.getElementById('apply-voucher-btn')?.addEventListener('click', handleApplyVoucher);
 });
 
 function initializePaymentPage() {
@@ -19,44 +24,87 @@ function initializePaymentPage() {
     }
     const bookingData = JSON.parse(dataString);
     
-    // 1. Hiển thị Ghế
+    // Lưu lại tổng tiền gốc
+    originalTotalAmount = bookingData.total_amount;
+
+    // Hiển thị thông tin cơ bản
     document.getElementById('summary-seat-list').textContent = bookingData.seat_labels;
-    
-    // 2. Hiển thị Giá Vé Riêng
-    const seatPrice = bookingData.seat_ids.length * 90000; // Hoặc lấy từ data nếu muốn
+    const seatPrice = bookingData.seat_ids.length * 90000;
     document.getElementById('summary-seat-total').textContent = seatPrice.toLocaleString('vi-VN') + " VND";
 
-    // ⭐ 3. HIỂN THỊ COMBO (MỚI) ⭐
+    // Hiển thị Combo
     const comboContainer = document.getElementById('combo-summary-list');
-    if (comboContainer) {
-        if (bookingData.combos && bookingData.combos.length > 0) {
-            let html = '';
-            bookingData.combos.forEach(c => {
-                html += `
-                    <div class="summary-item">
-                        <span>${c.qty} x ${c.name}</span>
-                        <span>${(c.qty * c.price).toLocaleString('vi-VN')} VND</span>
-                    </div>
-                `;
-            });
-            comboContainer.innerHTML = html;
-        } else {
-            comboContainer.innerHTML = ''; // Xóa nếu không có combo
-        }
+    if (comboContainer && bookingData.combos) {
+        comboContainer.innerHTML = bookingData.combos.length > 0 ? 
+            bookingData.combos.map(c => `
+                <div class="summary-item">
+                    <span>${c.qty} x ${c.name}</span>
+                    <span>${(c.qty * c.price).toLocaleString('vi-VN')} VND</span>
+                </div>`).join('') : '';
     }
 
-    // 4. Hiển thị Tổng Tiền Cuối Cùng (Đã bao gồm combo)
-    document.getElementById('summary-final-total').textContent = bookingData.total_amount.toLocaleString('vi-VN') + " VND";
+    // Hiển thị Tổng tiền ban đầu
+    updateTotalDisplay(originalTotalAmount);
 
-    // 5. Thông tin phim, ngày giờ, poster (Giữ nguyên)
+    // Thông tin phim
     document.getElementById('summary-title').textContent = bookingData.movie_title || "Phim chưa xác định";
-    if (bookingData.movie_image) {
-        document.getElementById('summary-poster').src = bookingData.movie_image;
-    }
-    if (bookingData.show_date && bookingData.show_time) {
-        document.getElementById('summary-date-time').textContent = `Ngày: ${bookingData.show_date} | Suất: ${bookingData.show_time}`;
-    }
+    if (bookingData.movie_image) document.getElementById('summary-poster').src = bookingData.movie_image;
+    if (bookingData.show_date) document.getElementById('summary-date-time').textContent = `Ngày: ${bookingData.show_date} | Suất: ${bookingData.show_time}`;
     document.getElementById('summary-booking-id').textContent = "CGV" + Math.floor(100000 + Math.random() * 900000);
+}
+
+// ⭐ CODE MỚI: Hàm xử lý Voucher
+async function handleApplyVoucher() {
+    const codeInput = document.getElementById('voucher-input');
+    const msgEl = document.getElementById('voucher-message');
+    const code = codeInput.value.trim().toUpperCase();
+
+    if (!code) return;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/vouchers/check.php?code=${code}`);
+        const data = await res.json();
+
+        if (data.valid) {
+            msgEl.textContent = `${data.message} (${data.desc})`;
+            msgEl.style.color = '#4caf50'; // Màu xanh
+            
+            // Tính toán giảm giá
+            if (data.is_percent) {
+                currentDiscount = originalTotalAmount * (data.discount_value / 100);
+            } else {
+                currentDiscount = data.discount_value;
+            }
+
+            // Cập nhật giao diện
+            document.getElementById('discount-row').style.display = 'flex';
+            document.getElementById('discount-amount').textContent = `-${currentDiscount.toLocaleString('vi-VN')} VND`;
+            
+            // Tính lại tổng cuối
+            const finalTotal = Math.max(0, originalTotalAmount - currentDiscount);
+            updateTotalDisplay(finalTotal);
+            
+            // Khóa ô nhập để không spam
+            codeInput.disabled = true;
+            document.getElementById('apply-voucher-btn').textContent = "Đã dùng";
+            document.getElementById('apply-voucher-btn').disabled = true;
+
+        } else {
+            msgEl.textContent = data.message;
+            msgEl.style.color = '#ff5555'; // Màu đỏ
+            currentDiscount = 0;
+            document.getElementById('discount-row').style.display = 'none';
+            updateTotalDisplay(originalTotalAmount);
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function updateTotalDisplay(amount) {
+    document.getElementById('summary-final-total').textContent = amount.toLocaleString('vi-VN') + " VND";
+    // Cập nhật lại vào sessionStorage để gửi đi khi bấm Thanh toán
+    // Lưu ý: Ta chỉ cập nhật số tiền hiển thị, data gốc giữ nguyên để server xử lý nếu cần
 }
 
 async function processRealPayment() {
@@ -64,20 +112,17 @@ async function processRealPayment() {
     const dataString = sessionStorage.getItem('bookingDetails');
     if (!dataString) return;
 
-    const bookingData = JSON.parse(dataString);
+    let bookingData = JSON.parse(dataString);
+    
+    // ⭐ CẬP NHẬT TỔNG TIỀN ĐÃ TRỪ GIẢM GIÁ ⭐
+    const finalAmount = Math.max(0, originalTotalAmount - currentDiscount);
 
-    // 1. Lấy tên và SĐT từ dữ liệu đã lưu ở bước trước (booking.js)
-    // Ưu tiên tên nhập ở bước Booking, nếu không có thì mới lấy "Khách hàng"
-    const finalName = bookingData.customer_name || document.getElementById('card-name')?.value || "Khách hàng";
-    const finalPhone = bookingData.customer_phone || ""; 
-
-    // 2. Payload gửi lên PHP
     const payload = {
         showtime_id: bookingData.showtime_id,
         seats: bookingData.seat_ids, 
-        customer_name: finalName,   // <--- Phải dùng biến này
-        customer_phone: finalPhone, // <--- QUAN TRỌNG: Phải dùng biến này, KHÔNG ĐƯỢC ĐỂ SỐ CỨNG
-        total_amount: bookingData.total_amount
+        customer_name: bookingData.customer_name || document.getElementById('card-name')?.value || "Khách hàng",
+        customer_phone: bookingData.customer_phone || "",
+        total_amount: finalAmount // Gửi số tiền đã giảm
     };
 
     btn.disabled = true;
@@ -91,18 +136,12 @@ async function processRealPayment() {
             credentials: 'include' 
         });
 
-        const text = await res.text(); 
-        let result;
-        try { result = JSON.parse(text); } catch(e) { throw new Error("Lỗi Server: " + text); }
+        const result = await res.json();
 
         if (res.ok) {
             document.getElementById('payment-success-modal').style.display = 'flex';
             sessionStorage.removeItem('bookingDetails');
-            
-            document.getElementById('back-to-home').addEventListener('click', () => {
-                window.location.href = 'index.html';
-            });
-
+            document.getElementById('back-to-home').addEventListener('click', () => window.location.href = 'index.html');
         } else {
             alert("Lỗi đặt vé: " + result.message);
             btn.disabled = false;
@@ -110,30 +149,23 @@ async function processRealPayment() {
         }
     } catch (err) {
         console.error(err);
-        alert("Lỗi kết nối: " + err.message);
+        alert("Lỗi kết nối server.");
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-lock"></i> Thanh Toán';
     }
 }
 
-function setupPaymentTabs() {
+function setupPaymentTabs() { /* ... Giữ nguyên code cũ ... */ 
     const tabs = document.querySelectorAll('.tab-btn');
     const contents = document.querySelectorAll('.tab-content');
-
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Xóa active cũ
             tabs.forEach(t => t.classList.remove('active'));
             contents.forEach(c => c.classList.remove('active'));
-
-            // Thêm active mới
             tab.classList.add('active');
             const targetId = tab.dataset.tab;
             document.getElementById(`tab-${targetId}`).classList.add('active');
         });
     });
 }
-
-async function checkLoginStatus() {
-    try { await fetch(`${API_BASE_URL}/auth/me.php`, { credentials: "include" }); } catch (e) {}
-}
+async function checkLoginStatus() { try { await fetch(`${API_BASE_URL}/auth/me.php`, { credentials: "include" }); } catch (e) {} }
