@@ -9,7 +9,6 @@ $database = new Database();
 $db = $database->getConnection();
 $movie = new Movie($db);
 
-// Lấy ID từ URL
 $movie->id = isset($_GET['id']) ? $_GET['id'] : die();
 
 $stmt = $movie->readSingle();
@@ -17,7 +16,6 @@ $stmt = $movie->readSingle();
 if ($stmt->rowCount() > 0) {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // Map dữ liệu từ DB sang JSON
     $movie_arr = [
         "id" => $row['id'],
         "title" => $row['title'],
@@ -25,15 +23,19 @@ if ($stmt->rowCount() > 0) {
         "imageUrl" => $row['poster'],
         "bannerUrl" => $row['banner'],
         "trailerUrl" => $row['trailer_url'],
-        // Lấy năm phát hành
         "year" => date('Y', strtotime($row['release_date'])),
         "duration" => $row['duration'] . " phút",
-        
-        // ⭐ QUAN TRỌNG: Lấy dữ liệu thật từ các cột mới trong DB ⭐
-        "rating" => $row['rating'],       
+        "release_date" => $row['release_date'], // Trả về ngày gốc để điền vào form
+        "rating" => $row['rating'],
         "genre" => $row['category'],
-        "director" => $row['director'],   
-        "cast" => $row['cast']            
+        
+        // ⭐ QUAN TRỌNG: Thêm 2 dòng này để Frontend biết trạng thái ⭐
+        "is_new" => $row['is_new'],
+        "is_trending" => $row['is_trending'],
+
+        // Kiểm tra nếu cột tồn tại (tránh lỗi nếu DB thiếu cột)
+        "director" => isset($row['director']) ? $row['director'] : "",
+        "cast" => isset($row['cast']) ? $row['cast'] : ""
     ];
     
     http_response_code(200);

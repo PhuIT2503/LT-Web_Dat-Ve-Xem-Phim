@@ -1,8 +1,11 @@
 <?php
 header("Access-Control-Allow-Origin: http://localhost");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Access-Control-Allow-Methods: POST"); // Hoặc PUT
+header("Access-Control-Allow-Credentials: true");
+
+// 1. Check quyền Admin
+include_once "../auth/check_admin.php";
 
 include_once "../../config/database.php";
 include_once "../../model/movie.php";
@@ -13,10 +16,9 @@ $movie = new Movie($db);
 
 $data = json_decode(file_get_contents("php://input"));
 
-if (
-    !empty($data->title) &&
-    !empty($data->poster)
-) {
+if (!empty($data->id) && !empty($data->title)) {
+    // Gán dữ liệu
+    $movie->id = $data->id;
     $movie->title = $data->title;
     $movie->description = $data->description;
     $movie->poster = $data->poster;
@@ -31,15 +33,14 @@ if (
     $movie->director = $data->director ?? '';
     $movie->cast = $data->cast ?? '';
 
-    if ($movie->create()) {
-        http_response_code(201);
-        echo json_encode(["message" => "Phim đã được tạo."]);
+    if ($movie->update()) {
+        echo json_encode(["message" => "Cập nhật phim thành công."]);
     } else {
         http_response_code(503);
-        echo json_encode(["message" => "Không thể tạo phim."]);
+        echo json_encode(["message" => "Lỗi khi cập nhật phim."]);
     }
 } else {
     http_response_code(400);
-    echo json_encode(["message" => "Dữ liệu không đầy đủ."]);
+    echo json_encode(["message" => "Thiếu dữ liệu."]);
 }
 ?>
