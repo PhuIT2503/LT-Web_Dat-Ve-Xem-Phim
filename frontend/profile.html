@@ -243,5 +243,49 @@
     <div id="modal-placeholder"></div>
 
     <script src="js/profile.js"></script>
+<div id="ticket-modal" class="modal-ticket">
+        <div class="ticket-content">
+            <span class="ticket-close-btn" id="close-ticket-btn">&times;</span>
+            
+            <div class="ticket-header">
+                <h3>VÉ XEM PHIM ĐIỆN TỬ</h3>
+                <p class="ticket-status">Đã Thanh Toán</p>
+            </div>
+
+            <div class="ticket-body">
+                <h2 id="t-movie-title" class="t-movie-title">Tên Phim Ở Đây</h2>
+                
+                <div class="ticket-info-grid">
+                    <div class="t-item">
+                        <label>Thời gian</label>
+                        <span id="t-showtime">--:--</span>
+                    </div>
+                    <div class="t-item">
+                        <label>Rạp chiếu</label>
+                        <span id="t-room">--</span>
+                    </div>
+                    <div class="t-item">
+                        <label>Ghế ngồi</label>
+                        <span id="t-seats" class="highlight">--</span>
+                    </div>
+                    <div class="t-item">
+                        <label>Mã Đơn</label>
+                        <span id="t-code">--</span>
+                    </div>
+                </div>
+
+                <div class="ticket-qr">
+                    <img id="t-qr-img" src="" alt="QR Code">
+                    <p>Đưa mã này cho nhân viên soát vé</p>
+                </div>
+            </div>
+
+            <div class="ticket-footer">
+                <p>Tổng tiền: <strong id="t-price" style="color: #e50914;">0 đ</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/profile.js"></script>
 </body>
 </html>

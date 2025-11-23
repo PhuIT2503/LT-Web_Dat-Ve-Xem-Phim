@@ -1,5 +1,4 @@
 <?php
-// Cấu hình CORS
 header("Access-Control-Allow-Origin: http://localhost");
 header("Access-Control-Allow-Credentials: true");
 header("Content-Type: application/json; charset=UTF-8");
@@ -10,26 +9,27 @@ session_start();
 include_once "../../config/database.php";
 
 if (!isset($_SESSION['user_id'])) {
-    // Trả về mảng rỗng nếu chưa login, thay vì lỗi 401 để tránh đỏ console
     echo json_encode([]); 
     exit;
 }
 
 $db = (new Database())->getConnection();
 
-// Lấy thông tin: ID vé, Tên phim, Giờ chiếu, Tổng tiền
+// Query mới: Lấy thông tin trực tiếp từ bảng bookings
 $query = "
     SELECT 
         b.id,
-        b.created_at,
+        b.booking_code,
+        b.movie_title,
+        b.cinema_room,
+        b.seat_list,
         b.total_amount,
         b.status,
-        m.title as movie_title,
+        b.created_at,
         s.show_time,
         s.show_date
     FROM bookings b
     JOIN showtimes s ON b.showtime_id = s.id
-    JOIN movies m ON s.movie_id = m.id
     WHERE b.user_id = ?
     ORDER BY b.created_at DESC
 ";
@@ -41,8 +41,12 @@ $history = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $history[] = [
         "id" => $row['id'],
-        "item" => $row['movie_title'] . " (" . date('H:i', strtotime($row['show_time'])) . ")",
-        "date" => date('d/m/Y H:i', strtotime($row['created_at'])),
+        "booking_code" => $row['booking_code'] ? $row['booking_code'] : ('CGV' . $row['id']),
+        "movie_title" => $row['movie_title'],
+        "cinema_room" => $row['cinema_room'],
+        "seats" => $row['seat_list'],
+        "show_time" => date('H:i d/m/Y', strtotime($row['show_date'] . ' ' . $row['show_time'])),
+        "created_at" => date('d/m/Y', strtotime($row['created_at'])),
         "total" => number_format($row['total_amount'], 0, ',', '.') . " đ",
         "status" => $row['status']
     ];

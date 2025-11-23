@@ -110,13 +110,18 @@
                 <div class="summary-details" id="combo-summary-list">
                     </div>
                 <div class="voucher-section" style="margin: 15px 0; border-top: 1px dashed var(--grey-color); padding-top: 15px;">
-                    <p style="margin-bottom: 5px; font-size: 0.9rem; color: var(--grey-color);">Mã giảm giá / Voucher</p>
+                    <p style="margin-bottom: 5px; font-size: 0.9rem; color: var(--grey-color);">Chọn khuyến mãi / Voucher</p>
+                    
                     <div style="display: flex; gap: 5px;">
-                        <input type="text" id="voucher-input" placeholder="Nhập mã (VD: GIAM10K)" 
-                            style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--grey-color); background: #222; color: #fff;">
-                        <button id="apply-voucher-btn" class="btn btn-secondary" 
-                                style="padding: 8px 15px; font-size: 0.9rem;">Áp dụng</button>
+                        <select id="voucher-select" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--grey-color); background: #222; color: #fff; cursor: pointer;">
+                            <option value="">-- Chọn mã giảm giá --</option>
+                            </select>
+
+                        <button id="apply-voucher-btn" class="btn btn-secondary" style="padding: 8px 15px; font-size: 0.9rem;">
+                            Áp dụng
+                        </button>
                     </div>
+
                     <p id="voucher-message" style="font-size: 0.85rem; margin-top: 5px;"></p>
                     
                     <div id="discount-row" class="summary-item" style="display: none; margin-top: 10px; color: #4caf50;">

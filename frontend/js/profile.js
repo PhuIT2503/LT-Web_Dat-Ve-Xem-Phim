@@ -34,24 +34,20 @@ async function fetchBookingHistory() {
     const container = document.getElementById('history-list');
     if(!container) return;
 
-    container.innerHTML = '<tr><td colspan="5" style="text-align:center;">Đang kết nối Database...</td></tr>';
+    container.innerHTML = '<tr><td colspan="6" style="text-align:center;">Đang tải dữ liệu...</td></tr>';
 
     try {
-        // GỌI API VỚI ĐƯỜNG DẪN CHUẨN
         const res = await fetch(`${API_BASE_URL}/bookings/list.php`, {
             method: "GET",
-            credentials: "include" // Quan trọng: Gửi kèm cookie session
+            credentials: "include"
         });
 
-        if (!res.ok) {
-            throw new Error(`Lỗi HTTP: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`Lỗi HTTP: ${res.status}`);
 
         const historyData = await res.json();
-        console.log("Dữ liệu lịch sử nhận được:", historyData); // Debug
 
         if (!historyData || historyData.length === 0) {
-            container.innerHTML = '<tr><td colspan="5" style="text-align:center;">Bạn chưa có giao dịch nào.</td></tr>';
+            container.innerHTML = '<tr><td colspan="6" style="text-align:center;">Bạn chưa có giao dịch nào.</td></tr>';
             return;
         }
 
@@ -61,20 +57,67 @@ async function fetchBookingHistory() {
             return '<span class="status-badge status-cancel">Đã hủy</span>';
         };
 
-        container.innerHTML = historyData.map(h => `
+        // Render bảng, thêm cột Hành động ở cuối
+        container.innerHTML = historyData.map((h, index) => `
             <tr>
-                <td class="order-id">#${h.id}</td>
-                <td style="font-weight: 600;">${h.item}</td>
-                <td>${h.date}</td>
+                <td class="order-id">${h.booking_code}</td>
+                <td style="font-weight: 600;">${h.movie_title}</td>
+                <td>${h.seats}</td>
+                <td>${h.created_at}</td>
                 <td class="order-total">${h.total}</td>
-                <td>${getStatusBadge(h.status)}</td>
+                
+                <td>
+                    <button class="btn-view-ticket" onclick='openTicketModal(${JSON.stringify(h)})'>
+                        <i class="fa-solid fa-ticket"></i> Xem Vé
+                    </button>
+                </td>
             </tr>
         `).join('');
+        
+        // Setup modal (gọi 1 lần sau khi load dữ liệu)
+        setupTicketModal();
 
     } catch (err) {
-        console.error("Chi tiết lỗi:", err);
-        container.innerHTML = `<tr><td colspan="5" style="text-align:center; color: red;">Lỗi: ${err.message}. Hãy kiểm tra Console.</td></tr>`;
+        console.error(err);
+        container.innerHTML = `<tr><td colspan="6" style="text-align:center; color: red;">Lỗi tải dữ liệu.</td></tr>`;
     }
+}
+
+// --- LOGIC MODAL VÉ (MỚI) ---
+function setupTicketModal() {
+    const modal = document.getElementById('ticket-modal');
+    const closeBtn = document.getElementById('close-ticket-btn');
+
+    if(closeBtn) {
+        closeBtn.onclick = () => { modal.style.display = "none"; };
+    }
+    
+    // Đóng khi click ra ngoài
+    window.onclick = (event) => {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+
+// Hàm được gọi khi bấm nút "Xem Vé"
+function openTicketModal(ticket) {
+    const modal = document.getElementById('ticket-modal');
+    
+    // Điền dữ liệu vào vé
+    document.getElementById('t-movie-title').textContent = ticket.movie_title;
+    document.getElementById('t-showtime').textContent = ticket.show_time;
+    document.getElementById('t-room').textContent = ticket.cinema_room;
+    document.getElementById('t-seats').textContent = ticket.seats;
+    document.getElementById('t-code').textContent = ticket.booking_code;
+    document.getElementById('t-price').textContent = ticket.total;
+
+    // Tạo QR Code giả lập theo mã vé
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticket.booking_code}`;
+    document.getElementById('t-qr-img').src = qrUrl;
+
+    // Hiện modal
+    modal.style.display = "flex";
 }
 
 // --- CÁC HÀM KHÁC (Giữ nguyên logic) ---
