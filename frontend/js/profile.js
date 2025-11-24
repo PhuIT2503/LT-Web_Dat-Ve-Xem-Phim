@@ -18,8 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     setupTabs();
     populateUserData(userData);
-    renderMockVouchers();
-    
+    await loadVouchersFromDB();    
     // Gọi hàm lấy lịch sử thật
     await fetchBookingHistory(); 
     
@@ -142,13 +141,25 @@ function populateUserData(user) {
     document.getElementById('profile-email').value = user.email;
 }
 
-function renderMockVouchers() {
-    const vouchers = [
-        { code: "CINE50", desc: "Giảm 50% vé xem phim", exp: "30/12/2025" },
-        { code: "FREECORN", desc: "Tặng 1 bắp ngọt nhỏ", exp: "15/05/2025" }
-    ];
+async function loadVouchersFromDB() {
     const container = document.getElementById('voucher-list');
-    if(container) {
+    if(!container) return;
+
+    // Hiển thị trạng thái đang tải
+    container.innerHTML = '<p style="color: var(--grey-color);">Đang tải ưu đãi...</p>';
+
+    try {
+        // Gọi API
+        const res = await fetch(`${API_BASE_URL}/vouchers/list.php`);
+        const vouchers = await res.json();
+
+        // Kiểm tra nếu không có voucher nào
+        if (!vouchers || vouchers.length === 0) {
+            container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--grey-color);">Hiện chưa có mã giảm giá nào.</p>';
+            return;
+        }
+
+        // Render danh sách voucher ra HTML
         container.innerHTML = vouchers.map(v => `
             <div class="voucher-item">
                 <span class="voucher-code">${v.code}</span>
@@ -156,6 +167,10 @@ function renderMockVouchers() {
                 <small style="color: var(--grey-color)">HSD: ${v.exp}</small>
             </div>
         `).join('');
+
+    } catch (err) {
+        console.error("Lỗi tải voucher:", err);
+        container.innerHTML = '<p style="color: #ff5555;">Không thể tải danh sách voucher.</p>';
     }
 }
 
