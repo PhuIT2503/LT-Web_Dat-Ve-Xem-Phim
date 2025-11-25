@@ -68,7 +68,7 @@ try {
     }
 
     // Tạo mã đơn hàng ngẫu nhiên (VD: CGV837291)
-    $booking_code = 'CGV' . rand(100000, 999999);
+    $booking_code = 'Gemflix' . rand(100000, 999999);
     
     // Lấy chuỗi ghế từ frontend gửi lên (VD: "A1, A2") hoặc để trống
     $seat_list_str = isset($data->seat_labels) ? $data->seat_labels : "Đang cập nhật";
