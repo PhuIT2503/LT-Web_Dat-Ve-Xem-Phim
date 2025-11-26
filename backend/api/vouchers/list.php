@@ -6,7 +6,7 @@ include_once "../../config/database.php";
 
 $db = (new Database())->getConnection();
 
-// 1. Lấy TẤT CẢ voucher, sắp xếp cái mới nhất lên đầu
+// sắp xếp voucher
 $query = "SELECT * FROM voucher ORDER BY han_su_dung DESC";
 $stmt = $db->prepare($query);
 $stmt->execute();
