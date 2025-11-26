@@ -15,6 +15,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $db = (new Database())->getConnection();
 
+// Query mới: Lấy thông tin trực tiếp từ bảng bookings
 $query = "
     SELECT 
         b.id,
@@ -40,7 +41,7 @@ $history = [];
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $history[] = [
         "id" => $row['id'],
-        "booking_code" => $row['booking_code'] ? $row['booking_code'] : ('Gemflix' . $row['id']),
+        "booking_code" => $row['booking_code'] ? $row['booking_code'] : ('CGV' . $row['id']),
         "movie_title" => $row['movie_title'],
         "cinema_room" => $row['cinema_room'],
         "seats" => $row['seat_list'],

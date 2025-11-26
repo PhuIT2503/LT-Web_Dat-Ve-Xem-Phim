@@ -58,6 +58,7 @@ function populateDetailPage(movie) {
     if(document.getElementById("detail-rating")) document.getElementById("detail-rating").textContent = movie.rating || "T13";
     if(document.getElementById("detail-genre")) document.getElementById("detail-genre").textContent = movie.genre;
 
+    // ⭐ ĐÂY LÀ PHẦN QUAN TRỌNG BẠN ĐANG THIẾU ⭐
     // Cập nhật Đạo diễn và Diễn viên lên giao diện
     if(document.getElementById("detail-director")) {
         document.getElementById("detail-director").textContent = movie.director || "Đang cập nhật";
@@ -67,7 +68,7 @@ function populateDetailPage(movie) {
     }
 }
 
-//Helper Functions
+// --- Helper Functions ---
 async function loadComponent(id, url) { try { document.querySelector(id).innerHTML = await (await fetch(url)).text(); } catch(e){} }
 async function checkLoginStatus() { try { const res = await fetch(`${API_BASE_URL}/auth/me.php`, {credentials:"include"}); const data=await res.json(); updateHeaderUI(res.ok?data.username:null); } catch(e){} }
 function updateHeaderUI(username) { 

@@ -1,22 +1,30 @@
 const API_BASE_URL = "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api";
 
+// Biến toàn cục
 let originalTotalAmount = 0; 
 let currentDiscount = 0;
 let currentVoucherCode = null;
-let allVouchers = [];
+let allVouchers = []; // Biến mới: Lưu danh sách voucher tải từ API
 
 document.addEventListener('DOMContentLoaded', async () => {
     await checkLoginStatus();
 
+    // 1. QUAN TRỌNG: Hiển thị thông tin vé từ Session
     initializePaymentPage(); 
+
+    // 2. Tải danh sách Voucher & Render vào Modal (Logic mới)
     await loadVoucherList();
 
     setupPaymentTabs();
+
+    // 3. Gán sự kiện nút thanh toán
     document.getElementById('confirm-payment')?.addEventListener('click', processRealPayment);
-        setupVoucherModalEvents();
+    
+    // 4. Thiết lập sự kiện cho Modal Voucher (Mở/Đóng/Xóa)
+    setupVoucherModalEvents();
 });
 
-//KHỞI TẠO TRANG (HIỂN THỊ THÔNG TIN VÉ)
+// --- HÀM 1: KHỞI TẠO TRANG (HIỂN THỊ THÔNG TIN VÉ) ---
 function initializePaymentPage() {
     const dataString = sessionStorage.getItem('bookingDetails');
     
@@ -39,7 +47,7 @@ function initializePaymentPage() {
     if (bookingData.show_date) {
         document.getElementById('summary-date-time').textContent = `Ngày: ${bookingData.show_date} | Suất: ${bookingData.show_time}`;
     }
-    document.getElementById('summary-booking-id').textContent = "Gemflix" + Math.floor(100000 + Math.random() * 900000);
+    document.getElementById('summary-booking-id').textContent = "CGV" + Math.floor(100000 + Math.random() * 900000);
 
     document.getElementById('summary-seat-list').textContent = bookingData.seat_labels || "Chưa chọn ghế";
     
@@ -47,7 +55,7 @@ function initializePaymentPage() {
     const seatPriceTotal = (bookingData.seat_ids ? bookingData.seat_ids.length : 0) * 90000; 
     document.getElementById('summary-seat-total').textContent = seatPriceTotal.toLocaleString('vi-VN') + " VND";
 
-    // Hiển thị Combo đã chọn
+    // Hiển thị Combo (Nếu có)
     const comboContainer = document.getElementById('combo-summary-list');
     if (comboContainer && bookingData.combos && bookingData.combos.length > 0) {
         comboContainer.innerHTML = bookingData.combos.map(c => `
@@ -62,12 +70,13 @@ function initializePaymentPage() {
     updateTotalDisplay(originalTotalAmount);
 }
 
-//TẢI VOUCHER TỪ API & RENDER MODAL
+// --- HÀM 2: TẢI VOUCHER TỪ API & RENDER MODAL (MỚI) ---
 async function loadVoucherList() {
     try {
         const res = await fetch(`${API_BASE_URL}/vouchers/list.php`);
         allVouchers = await res.json();
         
+        // Render dữ liệu vào Modal ngay sau khi tải xong
         renderVoucherModal();
     } catch (err) {
         console.error("Lỗi tải voucher:", err);
@@ -85,6 +94,8 @@ function renderVoucherModal() {
     }
 
     container.innerHTML = allVouchers.map(v => {
+        // Kiểm tra trạng thái từ API (is_valid)
+        // Nếu không hợp lệ (hết hạn) -> thêm class 'disabled' và text trạng thái
         const disabledClass = v.is_valid ? '' : 'disabled';
         const statusBadge = v.is_valid 
             ? '<span class="v-badge" style="background: #4caf50;">Dùng ngay</span>' 
@@ -104,22 +115,28 @@ function renderVoucherModal() {
     }).join('');
 }
 
-//HÀM 3: XỬ LÝ KHI NGƯỜI DÙNG CHỌN 1 VOUCHER TRONG MODAL
+// --- HÀM 3: XỬ LÝ KHI NGƯỜI DÙNG CHỌN 1 VOUCHER TRONG MODAL ---
+// Gán vào window để có thể gọi từ chuỗi HTML onclick
 window.selectVoucher = async function(code) {
+    // 1. Đóng modal
     const modal = document.getElementById('voucher-modal');
     if(modal) modal.style.display = 'none';
+    
+    // 2. Điền mã vào ô input hiển thị
     const inputDisplay = document.getElementById('selected-voucher-display');
     if(inputDisplay) inputDisplay.value = code;
     
+    // 3. Gọi hàm kiểm tra và tính toán giảm giá
     await handleApplyVoucher(code);
 };
 
-//CHECK VOUCHER VỚI SERVER & TÍNH TIỀN
+// --- HÀM 4: CHECK VOUCHER VỚI SERVER & TÍNH TIỀN ---
 async function handleApplyVoucher(code) {
     const msgEl = document.getElementById('voucher-message');
     
     if (!code) return;
 
+    // Reset thông báo đang xử lý
     msgEl.textContent = "Đang kiểm tra...";
     msgEl.style.color = "#ccc";
 
@@ -128,7 +145,8 @@ async function handleApplyVoucher(code) {
         const data = await res.json();
 
         if (data.valid) {
-            msgEl.textContent = `${data.message}`;
+            // --- TRƯỜNG HỢP THÀNH CÔNG ---
+            msgEl.textContent = `✅ ${data.message}`;
             msgEl.style.color = '#4caf50';
             currentVoucherCode = code;
             
@@ -155,7 +173,7 @@ async function handleApplyVoucher(code) {
 
         } else {
             // --- TRƯỜNG HỢP LỖI ---
-            msgEl.textContent = `${data.message}`;
+            msgEl.textContent = `❌ ${data.message}`;
             msgEl.style.color = '#ff5555';
             
             // Reset về 0 nếu mã lỗi
@@ -167,7 +185,7 @@ async function handleApplyVoucher(code) {
     }
 }
 
-// Hàm reset trạng thái voucher
+// Hàm reset trạng thái voucher (khi xóa hoặc lỗi)
 function resetVoucherState() {
     currentDiscount = 0;
     currentVoucherCode = null;
@@ -183,7 +201,7 @@ function resetVoucherState() {
     if(removeBtn) removeBtn.style.display = 'none';
 }
 
-//THIẾT LẬP SỰ KIỆN CHO MODAl
+// --- HÀM 5: THIẾT LẬP SỰ KIỆN CHO MODAL ---
 function setupVoucherModalEvents() {
     const modal = document.getElementById('voucher-modal');
     const openBtn = document.getElementById('open-voucher-modal-btn');
@@ -193,24 +211,26 @@ function setupVoucherModalEvents() {
     // Mở Modal
     if(openBtn) {
         openBtn.addEventListener('click', (e) => {
-            e.preventDefault();
+            e.preventDefault(); // Ngăn submit form nếu có
             modal.style.display = "flex";
         });
     }
 
-    // Đóng Modal
+    // Đóng Modal (Nút X)
     if(closeSpan) {
         closeSpan.addEventListener('click', () => {
             modal.style.display = "none";
         });
     }
+
+    // Đóng Modal (Click ra ngoài vùng trắng)
     window.addEventListener('click', (e) => {
         if(e.target == modal) {
             modal.style.display = "none";
         }
     });
 
-    // Nút Xóa Voucher
+    // Nút Xóa Voucher (Reset lại từ đầu)
     if(removeBtn) {
         removeBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -220,12 +240,12 @@ function setupVoucherModalEvents() {
     }
 }
 
-//CẬP NHẬT HIỂN THỊ TỔNG TIỀN
+// --- HÀM 6: CẬP NHẬT HIỂN THỊ TỔNG TIỀN ---
 function updateTotalDisplay(amount) {
     document.getElementById('summary-final-total').textContent = amount.toLocaleString('vi-VN') + " VND";
 }
 
-//XỬ LÝ THANH TOÁN (GỬI ĐƠN HÀNG)
+// --- HÀM 7: XỬ LÝ THANH TOÁN (GỬI ĐƠN HÀNG) ---
 async function processRealPayment() {
     const btn = document.getElementById('confirm-payment');
     const dataString = sessionStorage.getItem('bookingDetails');
@@ -234,6 +254,7 @@ async function processRealPayment() {
     let bookingData = JSON.parse(dataString);
     const finalAmount = Math.max(0, originalTotalAmount - currentDiscount);
 
+    // Payload gửi lên server
     const payload = {
         showtime_id: bookingData.showtime_id,
         seats: bookingData.seat_ids,
@@ -277,6 +298,7 @@ async function processRealPayment() {
     }
 }
 
+// --- HÀM BỔ TRỢ: TAB ---
 function setupPaymentTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
     const contents = document.querySelectorAll('.tab-content');

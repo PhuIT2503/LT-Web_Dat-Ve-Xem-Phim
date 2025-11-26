@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupUserMenuListeners();
     setupHeaderSearchListeners();
     
+    // Gọi hàm render kết quả từ API
     renderSearchResults();
 });
 
@@ -28,15 +29,15 @@ async function renderSearchResults() {
         title.textContent = q ? `Kết quả tìm kiếm cho "${q}"` : 'Tất cả phim';
         container.innerHTML = '<p>Đang tải dữ liệu...</p>';
 
-        //Tải template
+        // 1. Tải template
         const templateRes = await fetch('components/movie-card.html');
         const cardTemplate = await templateRes.text();
 
-        //GỌI API LẤY TẤT CẢ PHIM
+        // 2. ⭐ GỌI API LẤY TẤT CẢ PHIM ⭐ (Không truyền param type để lấy all)
         const res = await fetch(`${API_BASE_URL}/movies/list.php`);
         const allMovies = await res.json();
 
-        //Lọc phim theo từ khóa
+        // 3. Lọc phim theo từ khóa (Client-side filtering cho đơn giản)
         const filtered = q === '' 
             ? allMovies 
             : allMovies.filter(m => m.title.toLowerCase().includes(q));
@@ -46,7 +47,7 @@ async function renderSearchResults() {
             return;
         }
 
-        //Render ra màn hình
+        // 4. Render ra màn hình
         let html = '';
         filtered.forEach(m => {
             const year = m.release_date ? m.release_date.split('-')[0] : '2025';
@@ -66,6 +67,8 @@ async function renderSearchResults() {
     }
 }
 
+// (Các hàm helper loadComponent, checkLoginStatus... giữ nguyên giống main.js)
+// ... Bạn có thể copy đoạn Helper từ main.js sang đây để code gọn hơn ...
 async function loadComponent(id, url) { try { document.querySelector(id).innerHTML = await (await fetch(url)).text(); } catch(e){} }
 async function checkLoginStatus() { try { const res = await fetch(`${API_BASE_URL}/auth/me.php`, {credentials:"include"}); const data=await res.json(); updateHeaderUI(res.ok?data.username:null); } catch(e){} }
 function updateHeaderUI(username) { 

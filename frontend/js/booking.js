@@ -1,7 +1,7 @@
 const API_BASE_URL = "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api";
 const SEAT_PRICE = 90000; 
 
-//DỮ LIỆU COMBO (Giả lập)
+// --- DỮ LIỆU COMBO (Giả lập vì chưa có database bảng Combo) ---
 const COMBO_MENU = [
     { id: 'c1', name: "Combo Solo (1 Bắp + 1 Nước)", price: 79000, img: "assets/images/popcorn.png" },
     { id: 'c2', name: "Combo Couple (1 Bắp + 2 Nước)", price: 99000, img: "assets/images/popcorn.png" },
@@ -12,7 +12,7 @@ let selectedSeats = [];
 let selectedShowtimeId = null;
 let bookedSeatsList = []; 
 let currentMovieId = null;
-let selectedCombos = {};
+let selectedCombos = {}; // Lưu trữ combo: { 'c1': 2, 'c2': 0 }
 
 document.addEventListener('DOMContentLoaded', async () => {
     await checkLoginStatus(); 
@@ -31,7 +31,7 @@ async function initializeBookingPage(movieId) {
     await loadMovieInfo(movieId);
     generateDateSelector(movieId);
     
-    //KHỞI TẠO DANH SÁCH COMBO
+    // ⭐ KHỞI TẠO DANH SÁCH COMBO ⭐
     renderComboMenu();
 
     const btnConfirm = document.getElementById('confirm-booking');
@@ -42,13 +42,14 @@ async function initializeBookingPage(movieId) {
     }
 }
 
-//RENDER DANH SÁCH COMBO
+// --- 1. RENDER DANH SÁCH COMBO ---
 function renderComboMenu() {
     const container = document.getElementById('combo-list-container');
     if (!container) return;
     container.innerHTML = '';
 
     COMBO_MENU.forEach(item => {
+        // Mặc định số lượng là 0
         selectedCombos[item.id] = 0; 
 
         const div = document.createElement('div');
@@ -68,6 +69,7 @@ function renderComboMenu() {
         container.appendChild(div);
     });
 
+    // Gán sự kiện tăng giảm
     document.querySelectorAll('.quantity-btn.plus').forEach(btn => {
         btn.addEventListener('click', () => updateComboQuantity(btn.dataset.id, 1));
     });
@@ -77,12 +79,17 @@ function renderComboMenu() {
 }
 
 function updateComboQuantity(id, change) {
-    if (selectedCombos[id] + change < 0) return;
+    if (selectedCombos[id] + change < 0) return; // Không cho âm
     selectedCombos[id] += change;
 
-    document.getElementById(`qty-${id}`).textContent = selectedCombos[id];  
+    // Cập nhật số trên giao diện
+    document.getElementById(`qty-${id}`).textContent = selectedCombos[id];
+    
+    // Tính lại tổng tiền
     updateSummary();
 }
+
+// --- CÁC HÀM CŨ (Giữ nguyên logic, chỉ sửa updateSummary) ---
 
 async function loadMovieInfo(movieId) {
     try {
@@ -128,6 +135,7 @@ async function loadShowtimes(movieId, date) {
     document.getElementById('seat-map').innerHTML = 'Vui lòng chọn suất chiếu.';
     selectedShowtimeId = null;
     selectedSeats = [];
+    // Reset combo về 0 khi đổi ngày cho an toàn (hoặc giữ nguyên tùy bạn)
     updateSummary();
 
     try {
@@ -199,12 +207,12 @@ function handleSeatSelect(id, label) {
     updateSummary();
 }
 
-//CẬP NHẬT HÀM TÍNH TỔNG TIỀN (BAO GỒM CẢ COMBO)
+// ⭐ 2. CẬP NHẬT HÀM TÍNH TỔNG TIỀN (BAO GỒM CẢ COMBO) ⭐
 function updateSummary() {
-    //Tính tiền vé
+    // 1. Tính tiền vé
     const seatTotal = selectedSeats.length * SEAT_PRICE;
     
-    //Tính tiền Combo
+    // 2. Tính tiền Combo
     let comboTotal = 0;
     let comboSummaryHtml = '';
     
@@ -221,7 +229,7 @@ function updateSummary() {
         }
     });
 
-    //Cập nhật giao diện cột phải
+    // 3. Cập nhật giao diện cột phải
     const list = document.getElementById('selected-list');
     const seatTotalEl = document.getElementById('selected-seats-total');
     const comboListEl = document.getElementById('combo-summary-list');
@@ -236,14 +244,14 @@ function updateSummary() {
         seatTotalEl.textContent = seatTotal.toLocaleString('vi-VN') + " VND";
     }
 
-    //Hiển thị combo
+    // Hiển thị combo
     if (comboListEl) comboListEl.innerHTML = comboSummaryHtml;
 
-    //Hiển thị Tổng cộng
+    // Hiển thị Tổng cộng
     const finalTotal = seatTotal + comboTotal;
     totalPriceEl.textContent = finalTotal.toLocaleString('vi-VN') + " VND";
     
-    //Lưu giá trị tổng để dùng khi bấm tiếp tục
+    // Lưu giá trị tổng để dùng khi bấm tiếp tục
     totalPriceEl.dataset.value = finalTotal;
 }
 
@@ -279,7 +287,7 @@ function confirmBooking() {
         showtime_id: selectedShowtimeId, 
         seat_ids: selectedSeats.map(s => s.id),
         seat_labels: selectedSeats.map(s => s.label).join(', '),
-        total_amount: finalTotal,
+        total_amount: finalTotal, // Tổng tiền đã bao gồm Combo
         
         movie_title: document.getElementById('movie-title').textContent,
         movie_image: document.getElementById('movie-poster').src,
@@ -289,7 +297,7 @@ function confirmBooking() {
         customer_name: custName,
         customer_phone: custPhone,
         
-        //Truyền thêm combo sang trang Payment
+        // ⭐ Truyền thêm combo sang trang Payment
         combos: comboDetails 
     };
 
@@ -297,7 +305,7 @@ function confirmBooking() {
     window.location.href = 'payment.html';
 }
 
-// Helpers
+// Helpers (Giữ nguyên)
 async function checkLoginStatus() {
     try {
         const res = await fetch(`${API_BASE_URL}/auth/me.php`, { credentials: "include" });
