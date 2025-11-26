@@ -162,9 +162,7 @@ input:checked + .slider:before { transform: translateX(26px); }
 .slider.round:before { border-radius: 50%; }
 
 
-/* ==========================================================
-   ⭐⭐⭐ CSS MỚI CHO LỊCH SỬ GIAO DỊCH (TABLE) ⭐⭐⭐
-   ========================================================== */
+/*CSS MỚI CHO LỊCH SỬ GIAO DỊCH (TABLE)*/
 
 .history-container {
     background-color: rgba(255, 255, 255, 0.05);
@@ -176,7 +174,7 @@ input:checked + .slider:before { transform: translateX(26px); }
 .history-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 700px; /* Đảm bảo không bị co quá nhỏ trên mobile */
+    min-width: 700px; 
 }
 
 /* Header của bảng */
@@ -271,9 +269,7 @@ input:checked + .slider:before { transform: translateX(26px); }
     border-radius: 4px;
 }
 
-/* ==========================================================
-   ⭐⭐⭐ CSS MỚI CHO PHẦN THÔNG TIN CÁ NHÂN ⭐⭐⭐
-   ========================================================== */
+/*CSS CHO PHẦN THÔNG TIN CÁ NHÂN */
 
 .section-title {
     font-size: 1.8rem;
@@ -382,11 +378,8 @@ input:checked + .slider:before { transform: translateX(26px); }
     transform: translateY(-2px);
 }
 
-/* ==========================================================
-   ⭐⭐⭐ CSS MỚI CHO PHẦN CÀI ĐẶT (SETTINGS) ⭐⭐⭐
-   ========================================================== */
+/*CSS MỚI CHO PHẦN CÀI ĐẶT (SETTINGS)*/
 
-/* Item cài đặt (Mỗi dòng 1 tùy chọn) */
 .setting-item {
     display: flex;
     justify-content: space-between;
@@ -481,9 +474,7 @@ input:checked + .slider:before { transform: translateX(26px); }
     .form-actions { text-align: center; }
     .form-actions .btn { width: 100%; justify-content: center; }
 }
-/* =========================================
-   ⭐⭐⭐ CSS CHO MODAL VÉ ĐIỆN TỬ ⭐⭐⭐
-   ========================================= */
+/*CSS CHO MODAL VÉ ĐIỆN TỬ*/
 
 .modal-ticket {
     display: none; /* Ẩn mặc định */
