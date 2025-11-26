@@ -47,7 +47,7 @@ function initializePaymentPage() {
     if (bookingData.show_date) {
         document.getElementById('summary-date-time').textContent = `Ngày: ${bookingData.show_date} | Suất: ${bookingData.show_time}`;
     }
-    document.getElementById('summary-booking-id').textContent = "Gemflix" + Math.floor(100000 + Math.random() * 900000);
+    document.getElementById('summary-booking-id').textContent = "CGV" + Math.floor(100000 + Math.random() * 900000);
 
     document.getElementById('summary-seat-list').textContent = bookingData.seat_labels || "Chưa chọn ghế";
     
