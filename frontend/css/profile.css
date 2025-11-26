@@ -131,6 +131,19 @@
     display: block;
 }
 
+.voucher-item.voucher-disabled {
+    opacity: 0.6;
+    background-color: #2a2a2a; /* Màu tối hơn */
+    border-color: #555; /* Viền xám thay vì đỏ */
+    cursor: not-allowed;
+    filter: grayscale(100%);
+}
+
+.voucher-item.voucher-disabled .voucher-code {
+    color: #999;
+    text-decoration: line-through; 
+}
+
 /* Switch Toggle for Settings */
 .switch {
     position: relative;

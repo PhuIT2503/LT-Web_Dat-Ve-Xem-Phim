@@ -31,13 +31,69 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Load lịch sử đặt vé
     await fetchBookingHistory();
+    await fetchVouchers();
 
     // Load voucher mock
-    renderMockVouchers();
 
     // ====== THIẾT LẬP CRUD USER Ở ĐÂY ======
     setupUserUpdateHandlers();
 });
+
+async function fetchVouchers() {
+    const container = document.getElementById('voucher-list');
+    if (!container) return;
+
+    container.innerHTML = '<p>Đang tải ưu đãi...</p>';
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/vouchers/list.php`, { credentials: "include" }); // ⭐ QUAN TRỌNG: Thêm credentials để gửi session user lên
+        const vouchers = await res.json();
+
+        if (!vouchers || vouchers.length === 0) {
+            container.innerHTML = '<p>Hiện tại chưa có mã giảm giá nào.</p>';
+            return;
+        }
+
+        container.innerHTML = vouchers.map(v => {
+            // Xác định trạng thái để hiển thị chữ và class
+            let statusText = '';
+            let statusColor = '';
+            let itemClass = '';
+
+            if (v.is_used) {
+                statusText = 'Đã sử dụng';
+                statusColor = '#ff5555'; // Màu đỏ nhạt
+                itemClass = 'voucher-disabled'; // Làm mờ
+            } else if (v.is_expired) {
+                statusText = 'Hết hiệu lực';
+                statusColor = '#888'; // Màu xám
+                itemClass = 'voucher-disabled'; // Làm mờ
+            } else {
+                statusText = 'Còn hiệu lực';
+                statusColor = '#4caf50'; // Màu xanh lá
+                itemClass = ''; // Sáng bình thường
+            }
+
+            return `
+            <div class="voucher-item ${itemClass}">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                    <span class="voucher-code">${v.code}</span>
+                    <small style="color: ${statusColor}; font-weight: bold;">${statusText}</small>
+                </div>
+                <p style="margin-bottom: 10px; color: #ddd;">${v.desc}</p>
+                <div style="border-top: 1px dashed #444; padding-top: 8px; font-size: 0.9rem; color: #aaa; display: flex; justify-content: space-between;">
+                    <span>Giảm: ${v.discount}</span>
+                    <span>HSD: ${v.exp}</span>
+                </div>
+            </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error("Lỗi:", err);
+        container.innerHTML = '<p style="color:red">Lỗi tải dữ liệu.</p>';
+    }
+}
 
 // =================== LOAD LỊCH SỬ BOOKING ====================
 async function fetchBookingHistory() {
@@ -185,22 +241,6 @@ function setupUserUpdateHandlers() {
         alert(data.message);
         if (data.success) window.location.href = "index.html";
     });
-}
-
-// =================== VOUCHER MOCK ====================
-function renderMockVouchers() {
-    const vouchers = [
-        { code: "CINE50", desc: "Giảm 50% vé xem phim", exp: "30/12/2025" },
-        { code: "FREECORN", desc: "Tặng 1 bắp ngọt nhỏ", exp: "15/05/2025" }
-    ];
-    const container = document.getElementById('voucher-list');
-    container.innerHTML = vouchers.map(v => `
-        <div class="voucher-item">
-            <span class="voucher-code">${v.code}</span>
-            <p>${v.desc}</p>
-            <small>HSD: ${v.exp}</small>
-        </div>
-    `).join('');
 }
 
 // =================== AUTH ====================
