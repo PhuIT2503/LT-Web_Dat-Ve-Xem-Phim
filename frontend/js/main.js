@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function initializeApp() {
     try {
-        //Load các thành phần giao diện chung
+        // 1. Load các thành phần giao diện chung
         await Promise.all([
             loadComponent("#header-placeholder", "components/header.html"),
             loadComponent("#footer-placeholder", "components/footer.html"),
@@ -14,11 +14,16 @@ async function initializeApp() {
             loadComponent("#banner-slider-placeholder", "components/banner-slider.html")
         ]);
 
-        await checkLoginStatus();       
+        // 2. ⭐ KIỂM TRA ĐĂNG NHẬP & QUYỀN ADMIN ⭐
+        await checkLoginStatus();
+        
+        // 3. Setup các sự kiện
         addHeaderScrollEffect();
         setupModalListeners();
         setupUserMenuListeners();
         setupHeaderSearchListeners();
+
+        // 4. Load dữ liệu phim
         await loadBanner();         
         await loadMovieGrids();     
 
@@ -27,14 +32,14 @@ async function initializeApp() {
     }
 }
 
-//LOGIC ADMIN
+// --- LOGIC ADMIN & ĐĂNG NHẬP (Đã cập nhật giống auth.js) ---
 
 async function checkLoginStatus() {
     try {
         const res = await fetch(`${API_BASE_URL}/auth/me.php`, { credentials: "include" });
         if (res.ok) {
             const userData = await res.json();
-            updateHeaderUI(userData);
+            updateHeaderUI(userData); // Truyền toàn bộ object user (có role)
         } else {
             updateHeaderUI(null);
         }
@@ -50,10 +55,12 @@ function updateHeaderUI(user) {
     if (!btn || !dropdown) return;
 
     if (user) {
+        // Đã đăng nhập
         btn.innerHTML = `<i class="fa-solid fa-user"></i> Chào, ${user.username}`;
         
         let menuHtml = `<a href="profile.html"><i class="fa-solid fa-id-card"></i> Tài khoản của tôi</a>`;
 
+        // ⭐ KIỂM TRA QUYỀN ADMIN Ở ĐÂY ⭐
         if (user.role === 'admin') {
             menuHtml += `<a href="admin/index.html" style="color: #e50914; font-weight: bold; border-top: 1px solid #333;">
                             <i class="fa-solid fa-gauge"></i> Trang Quản Trị
@@ -64,6 +71,7 @@ function updateHeaderUI(user) {
         
         dropdown.innerHTML = menuHtml;
 
+        // Gán sự kiện đăng xuất (dùng setTimeout để đảm bảo phần tử đã được render)
         setTimeout(() => { 
             document.getElementById('logout-btn')?.addEventListener('click', async (e)=>{ 
                 e.preventDefault(); 
@@ -79,10 +87,11 @@ function updateHeaderUI(user) {
     }
 }
 
-//CÁC HÀM LOAD DỮ LIỆU PHIM
+// --- CÁC HÀM LOAD DỮ LIỆU PHIM (GIỮ NGUYÊN) ---
 
 async function loadBanner() {
     try {
+        // Lấy phim ID = 1 làm banner
         const res = await fetch(`${API_BASE_URL}/movies/detail.php?id=1`);
         if (!res.ok) return;
         const movie = await res.json();
@@ -145,7 +154,7 @@ function renderGrid(elementId, movies, template) {
     }).join("");
 }
 
-//CÁC HÀM HELPER GIAO DIỆN
+// --- CÁC HÀM HELPER GIAO DIỆN ---
 async function loadComponent(id, url) { try { document.querySelector(id).innerHTML = await (await fetch(url)).text(); } catch(e){} }
 
 function addHeaderScrollEffect() { 

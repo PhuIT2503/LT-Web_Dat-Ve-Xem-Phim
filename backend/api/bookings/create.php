@@ -52,6 +52,7 @@ try {
         throw new Exception("Ghế bạn chọn vừa có người khác đặt. Vui lòng chọn lại.");
     }
 
+    // 4. ⭐ LẤY THÔNG TIN PHIM VÀ PHÒNG CHIẾU TỪ SHOWTIME_ID ⭐
     // (Để lưu cứng vào lịch sử, sau này in vé không cần join bảng)
     $infoSql = "SELECT m.title as movie_title, r.name as room_name 
                 FROM showtimes s
@@ -76,7 +77,7 @@ try {
     $voucher_code = isset($data->voucher_code) ? $data->voucher_code : null;
     $discount_amount = isset($data->discount_amount) ? $data->discount_amount : 0;
 
-    //INSERT VÀO BOOKINGS VỚI ĐẦY ĐỦ THÔNG TIN
+    // 5. ⭐ INSERT VÀO BOOKINGS VỚI ĐẦY ĐỦ THÔNG TIN ⭐
     $sql = "INSERT INTO bookings 
             (user_id, booking_code, movie_title, cinema_room, seat_list, showtime_id, customer_name, customer_phone, total_amount, voucher_code, discount_amount, status) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'success')";
@@ -85,9 +86,9 @@ try {
     $stmt->execute([
         $_SESSION['user_id'],
         $booking_code,
-        $showInfo['movie_title'], 
-        $showInfo['room_name'],   
-        $seat_list_str,           
+        $showInfo['movie_title'], // Tên phim
+        $showInfo['room_name'],   // Tên phòng
+        $seat_list_str,           // Danh sách ghế (VD: A1, A2)
         $data->showtime_id,
         $data->customer_name ?? 'Khách hàng',
         $data->customer_phone ?? '',
@@ -98,7 +99,7 @@ try {
     
     $booking_id = $db->lastInsertId();
 
-    //Lưu chi tiết ghế (ID) vào bảng phụ booking_seats (để check trùng ghế)
+    // 6. Lưu chi tiết ghế (ID) vào bảng phụ booking_seats (để check trùng ghế)
     $stmtSeat = $db->prepare("INSERT INTO booking_seats (booking_id, seat_id) VALUES (?, ?)");
     foreach ($data->seats as $seat_id) {
         $stmtSeat->execute([$booking_id, $seat_id]);

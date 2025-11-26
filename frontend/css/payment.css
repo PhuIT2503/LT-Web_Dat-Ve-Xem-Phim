@@ -1,4 +1,4 @@
-/*CHO TRANG THANH TOÁN*/
+/* === CSS MỚI: CHO TRANG THANH TOÁN === */
 .payment-container {
     display: flex;
     flex-wrap: wrap;
@@ -9,6 +9,7 @@
     color: #fff;
 }
 
+/* Cột trái: Chi tiết thanh toán */
 .payment-methods {
     flex: 1;
     min-width: 400px;
@@ -42,11 +43,11 @@
     border-bottom-color: var(--primary-color);
 }
 .tab-content {
-    display: none;
+    display: none; /* Ẩn mặc định */
     min-height: 200px;
 }
 .tab-content.active {
-    display: block; 
+    display: block; /* Hiện tab được chọn */
 }
 .tab-content p {
     font-size: 1.1rem;
@@ -68,11 +69,12 @@
     background-color: #fff;
     margin: 10px auto;
     display: block;
-    padding: 10px;
+    padding: 10px; /* (Giả lập ảnh QR) */
 }
 
+/* Cột phải: Tóm tắt vé */
 .booking-summary {
-    flex-basis: 400px; 
+    flex-basis: 400px; /* Chiều rộng cố định */
     position: sticky;
     top: 100px;
     height: fit-content;
@@ -130,7 +132,7 @@
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background-color: rgba(0, 0, 0, 0.9);
-    display: none; 
+    display: none; /* Ẩn ban đầu */
     justify-content: center;
     align-items: center;
     z-index: 2000;
@@ -147,12 +149,12 @@
 
 /* Responsive */
 @media (max-width: 900px) {
-    .payment-container { flex-direction: column-reverse; } 
+    .payment-container { flex-direction: column-reverse; } /* Đảo cột */
     .booking-summary { flex-basis: 100%; position: static; }
     .payment-methods { min-width: 100%; }
 }
 
-/*CSS CHO MODAL VOUCHER*/
+/* --- CSS CHO MODAL VOUCHER --- */
 .voucher-input-group {
     display: flex;
     gap: 10px;
@@ -161,17 +163,17 @@
 
 .voucher-input-group input {
     flex: 1;
-    background-color: rgba(255, 255, 255, 0.05); 
-    border: 1px solid rgba(255, 255, 255, 0.2); 
+    background-color: rgba(255, 255, 255, 0.05); /* Nền trong suốt nhẹ */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Viền mảnh tinh tế */
     color: #fff;
     padding: 10px 15px;
-    border-radius: 6px;
+    border-radius: 6px; /* Bo góc mềm hơn */
     font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease; /* Hiệu ứng chuyển màu mượt */
 }
 
-
+/* Hiệu ứng khi di chuột hoặc bấm vào ô input */
 .voucher-input-group input:hover,
 .voucher-input-group input:focus {
     border-color: var(--primary-color);
@@ -182,8 +184,8 @@
 
 /* Nút bấm (Chọn mã / Xóa) */
 .voucher-input-group .btn {
-    padding: 0 20px;     
-    height: 42px;       
+    padding: 0 20px;     /* Padding ngang */
+    height: 42px;        /* Chiều cao cố định bằng Input */
     border-radius: 6px;
     font-size: 0.9rem;
     display: flex;
@@ -191,9 +193,10 @@
     justify-content: center;
     gap: 8px;
     transition: all 0.3s ease;
-    white-space: nowrap;
+    white-space: nowrap; /* Không xuống dòng */
 }
 
+/* Style riêng cho nút Chọn Mã (Secondary) */
 #open-voucher-modal-btn {
     background-color: #333;
     border: 1px solid #555;
@@ -202,23 +205,25 @@
 #open-voucher-modal-btn:hover {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
-    transform: translateY(-1px); 
+    transform: translateY(-1px); /* Nổi lên nhẹ */
 }
 
 
-/*Modal Overlay & Animation*/
+/* --- 2. Modal Overlay & Animation --- */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.85); /* Nền tối sâu hơn */
     z-index: 3000;
     display: none; 
     justify-content: center;
     align-items: center;
     
+    /* Animation: Hiện dần từ từ */
     animation: fadeInOverlay 0.3s ease-out forwards;
 }
 
+/* Hộp Modal Chính */
 .voucher-modal-content {
     background: var(--light-dark-color);
     width: 450px;
@@ -231,12 +236,13 @@
     max-height: 80vh;
     border: 1px solid rgba(255, 255, 255, 0.1);
 
+    /* Animation: Trượt lên và Phóng to nhẹ */
     opacity: 0;
     transform: translateY(20px) scale(0.95);
     animation: slideInModal 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards 0.1s;
 }
 
-/*KEYFRAMES (Định nghĩa chuyển động)*/
+/* --- KEYFRAMES (Định nghĩa chuyển động) --- */
 @keyframes fadeInOverlay {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -250,9 +256,9 @@
 }
 
 
-/*Các thành phần bên trong Modal*/
+/* --- 3. Các thành phần bên trong Modal --- */
 .voucher-header {
-    background: linear-gradient(135deg, var(--primary-color), #b20710); 
+    background: linear-gradient(135deg, var(--primary-color), #b20710); /* Gradient đỏ sang trọng */
     padding: 15px 20px;
     display: flex;
     justify-content: space-between;
@@ -278,13 +284,14 @@
     gap: 12px;
     background-color: #1a1a1a;
 }
+/* Scrollbar mảnh đẹp hơn */
 .voucher-list-container::-webkit-scrollbar { width: 6px; }
 .voucher-list-container::-webkit-scrollbar-track { background: #222; }
 .voucher-list-container::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
 .voucher-list-container::-webkit-scrollbar-thumb:hover { background: #777; }
 
 
-/*Item Voucher*/
+/* --- 4. Item Voucher --- */
 .v-item {
     background: #252525;
     border: 1px solid #333;
@@ -300,7 +307,7 @@
 }
 .v-item:hover {
     background: #2f2f2f;
-    transform: translateX(5px);
+    transform: translateX(5px); /* Hiệu ứng trượt sang phải khi hover */
     box-shadow: 2px 4px 10px rgba(0,0,0,0.2);
 }
 
@@ -308,6 +315,7 @@
 .v-desc { color: #eee; font-size: 0.95rem; font-weight: 500; }
 .v-exp { color: #888; font-size: 0.85rem; font-style: italic; }
 
+/* Trạng thái Disabled (Đã hết hạn) */
 .v-item.disabled {
     opacity: 0.6;
     cursor: not-allowed;

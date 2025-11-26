@@ -15,6 +15,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $db = (new Database())->getConnection();
 
+// Query mới: Lấy thông tin trực tiếp từ bảng bookings
 $query = "
     SELECT 
         b.id,
