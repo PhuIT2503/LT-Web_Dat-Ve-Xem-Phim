@@ -1,9 +1,9 @@
 :root {
-    --primary-color: #e50914; /* Màu đỏ của Netflix */
-    --dark-color: #141414;      /* Màu nền chính */
-    --light-dark-color: #181818; /* Màu nền phụ (cho card) */
-    --light-color: #ffffff;     /* Màu chữ chính */
-    --grey-color: #8c8c8c;      /* Màu chữ phụ */
+    --primary-color: #e50914; 
+    --dark-color: #141414;      
+    --light-dark-color: #181818; 
+    --light-color: #ffffff;     
+    --grey-color: #8c8c8c;      
     
     --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --header-height: 70px;

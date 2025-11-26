@@ -23,7 +23,6 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// *** CẬP NHẬT LOGIC ***
 // Lấy thông tin chi tiết của user
 include_once "../../config/database.php";
 include_once "../../model/user.php";
@@ -44,7 +43,6 @@ if ($stmt->rowCount() > 0) {
         "role" => $row['role']
     ]);
 } else {
-    // Lỗi: có session nhưng không tìm thấy user
     http_response_code(404);
     echo json_encode(["message" => "Không tìm thấy người dùng."]);
 }

@@ -1,4 +1,3 @@
-// ĐƯỜNG DẪN TUYỆT ĐỐI ĐẾN API (Sửa tên thư mục ở đây nếu cần)
 const API_BASE_URL = "http://localhost/LT-Web_Dat-Ve-Xem-Phim/backend/api";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -28,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setupHeaderSearchListeners();
 });
 
-// --- HÀM LẤY LỊCH SỬ TỪ DATABASE ---
+//HÀM LẤY LỊCH SỬ TỪ DATABASE
 async function fetchBookingHistory() {
     const container = document.getElementById('history-list');
     if(!container) return;
@@ -56,7 +55,6 @@ async function fetchBookingHistory() {
             return '<span class="status-badge status-cancel">Đã hủy</span>';
         };
 
-        // Render bảng, thêm cột Hành động ở cuối
         container.innerHTML = historyData.map((h, index) => `
             <tr>
                 <td class="order-id">${h.booking_code}</td>
@@ -73,7 +71,6 @@ async function fetchBookingHistory() {
             </tr>
         `).join('');
         
-        // Setup modal (gọi 1 lần sau khi load dữ liệu)
         setupTicketModal();
 
     } catch (err) {
@@ -82,7 +79,7 @@ async function fetchBookingHistory() {
     }
 }
 
-// --- LOGIC MODAL VÉ (MỚI) ---
+//LOGIC MODAL VÉ
 function setupTicketModal() {
     const modal = document.getElementById('ticket-modal');
     const closeBtn = document.getElementById('close-ticket-btn');
@@ -119,7 +116,7 @@ function openTicketModal(ticket) {
     modal.style.display = "flex";
 }
 
-// --- CÁC HÀM KHÁC (Giữ nguyên logic) ---
+//CÁC HÀM KHÁC (Giữ nguyên logic)
 function setupTabs() {
     const btns = document.querySelectorAll('.menu-btn:not(.logout-btn)');
     const sections = document.querySelectorAll('.content-section');

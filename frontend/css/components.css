@@ -1,11 +1,11 @@
-/* --- 1. Header --- */
+/*Header*/
 .main-header {
-    position: fixed; /* Cố định trên cùng */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: var(--header-height);
-    background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0)); /* Hiệu ứng mờ dần */
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0));
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -14,7 +14,6 @@
     transition: background-color 0.3s ease;
 }
 
-/* Thêm class 'scrolled' khi cuộn chuột */
 .main-header.scrolled {
     background-color: var(--light-dark-color);
 }
@@ -37,59 +36,57 @@
     color: var(--grey-color);
 }
 
-/* MỚI: Wrapper cho các item bên phải */
 .header-right {
     display: flex;
     align-items: center;
-    gap: 15px; /* Khoảng cách giữa icon user và search */
+    gap: 15px;
 }
 
-/* MỚI: Container cho user menu */
 .user-menu {
-    position: relative; /* Quan trọng để định vị dropdown */
+    position: relative;
 }
 
-/* MỚI: Nút icon user */
+/*Nút icon user */
 .user-menu-btn {
     background: transparent;
     border: none;
     color: var(--light-color);
-    font-size: 1rem; /* ⭐ Giảm font size một chút */
+    font-size: 1rem;
     cursor: pointer;
-    padding: 5px 10px; /* ⭐ Thêm padding ngang */
+    padding: 5px 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: color 0.3s ease;
-    gap: 8px; /* ⭐ Khoảng cách giữa icon và chữ */
-    border-radius: 4px; /* Thêm bo góc */
+    gap: 8px; 
+    border-radius: 4px; 
 }
 .user-menu-btn:hover {
     color: var(--grey-color);
-    background-color: rgba(255, 255, 255, 0.1); /* Thêm hiệu ứng hover */
+    background-color: rgba(255, 255, 255, 0.1); 
 }
 
-/* MỚI: Dropdown menu */
+/*Dropdown menu */
 .user-dropdown {
-    display: none; /* Ẩn ban đầu */
+    display: none; 
     position: absolute;
-    top: 120%; /* Vị trí dưới nút icon (cách 20%) */
+    top: 120%; 
     right: 0;
     background-color: var(--light-dark-color);
     border: 1px solid var(--grey-color);
     border-radius: 4px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    width: 150px; /* Độ rộng dropdown */
-    z-index: 101; /* Phải cao hơn header (z-index: 100) */
+    width: 150px; 
+    z-index: 101; 
     overflow: hidden;
 }
 
-/* MỚI: Class 'active' để hiện dropdown (JS sẽ thêm/xóa) */
+/*Class 'active' để hiện dropdown */
 .user-dropdown.active {
     display: block; 
 }
 
-/* MỚI: Các link trong dropdown */
+/*Các link trong dropdown */
 .user-dropdown a {
     display: block;
     padding: 10px 15px;
@@ -121,15 +118,15 @@
     color: var(--grey-color);
 }
 
-/* --- 2. Banner Slider --- */
+/*Banner Slider*/
 .banner-slider-container {
-    height: 56.25vw; /* Tỷ lệ 16:9 */
-    max-height: 80vh; /* Chiều cao tối đa */
+    height: 56.25vw; 
+    max-height: 80vh; 
     position: relative;
     background-size: cover;
     background-position: center top;
     display: flex;
-    align-items: flex-end; /* Căn nội dung xuống dưới */
+    align-items: flex-end; 
     padding: 0 4% 10%;
 }
 
@@ -186,7 +183,7 @@
     color: var(--light-color);
 }
 
-/* --- 3. Movie Card --- */
+/*Movie Card */
 .movie-card {
     background-color: var(--light-dark-color);
     border-radius: 5px;
@@ -196,14 +193,14 @@
 }
 
 .movie-card:hover {
-    transform: scale(1.05); /* Hiệu ứng zoom khi hover */
+    transform: scale(1.05); 
     box-shadow: 0 10px 20px rgba(0,0,0,0.5);
 }
 
 .movie-card-img {
     width: 100%;
-    height: 300px; /* Chiều cao cố định cho ảnh */
-    object-fit: cover; /* Đảm bảo ảnh vừa vặn */
+    height: 300px; 
+    object-fit: cover;
 }
 
 .movie-card-info {
@@ -212,9 +209,9 @@
 
 .movie-card-info h4 {
     font-size: 1.1rem;
-    white-space: nowrap; /* Tên phim trên 1 dòng */
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Thêm dấu "..." nếu quá dài */
+    text-overflow: ellipsis; 
     margin-bottom: 5px;
 }
 
@@ -223,7 +220,7 @@
     color: var(--grey-color);
 }
 
-/* --- 4. Footer --- */
+/*Footer*/
 .main-footer {
     border-top: 1px solid var(--grey-color);
     padding: 40px 4%;
@@ -232,7 +229,7 @@
     color: var(--grey-color);
 }
 
-/* --- 5. Modal Trailer --- */
+/*Modal Trailer*/
 .modal-trailer {
     position: fixed;
     top: 0;
@@ -246,7 +243,6 @@
     z-index: 1000;
 }
 
-/* Class 'active' sẽ được JS thêm vào để hiện modal */
 .modal-trailer.active {
     display: flex;
 }
@@ -259,7 +255,7 @@
 
 .modal-close {
     position: absolute;
-    top: -40px; /* Nút X nằm bên ngoài video */
+    top: -40px; 
     right: 0;
     font-size: 2rem;
     color: var(--light-color);
@@ -268,7 +264,7 @@
 
 .video-container {
     position: relative;
-    padding-bottom: 56.25%; /* Tỷ lệ 16:9 */
+    padding-bottom: 56.25%; 
     height: 0;
 }
 
@@ -283,7 +279,7 @@
 .user-avatar {
     width: 35px;
     height: 35px;
-    background-color: var(--primary-color); /* Màu đỏ */
+    background-color: var(--primary-color);
     color: #ffffff;
     border-radius: 50%;
     display: flex;
