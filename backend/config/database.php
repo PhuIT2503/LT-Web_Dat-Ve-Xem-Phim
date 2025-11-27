@@ -16,9 +16,7 @@ class Database {
             );
             $this->conn->exec("set names utf8");
             
-            // --- THÊM DÒNG NÀY ĐỂ BẬT BÁO LỖI ---
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            // ------------------------------------
             
         } catch (PDOException $exception) {
             echo "Kết nối thất bại: " . $exception->getMessage();

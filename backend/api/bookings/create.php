@@ -52,7 +52,7 @@ try {
         throw new Exception("Ghế bạn chọn vừa có người khác đặt. Vui lòng chọn lại.");
     }
 
-    // 4. ⭐ LẤY THÔNG TIN PHIM VÀ PHÒNG CHIẾU TỪ SHOWTIME_ID ⭐
+    // 4.LẤY THÔNG TIN PHIM VÀ PHÒNG CHIẾU TỪ SHOWTIME_ID
     // (Để lưu cứng vào lịch sử, sau này in vé không cần join bảng)
     $infoSql = "SELECT m.title as movie_title, r.name as room_name 
                 FROM showtimes s
@@ -77,7 +77,7 @@ try {
     $voucher_code = isset($data->voucher_code) ? $data->voucher_code : null;
     $discount_amount = isset($data->discount_amount) ? $data->discount_amount : 0;
 
-    // 5. ⭐ INSERT VÀO BOOKINGS VỚI ĐẦY ĐỦ THÔNG TIN ⭐
+    // 5.INSERT VÀO BOOKINGS VỚI ĐẦY ĐỦ THÔNG TIN
     $sql = "INSERT INTO bookings 
             (user_id, booking_code, movie_title, cinema_room, seat_list, showtime_id, customer_name, customer_phone, total_amount, voucher_code, discount_amount, status) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'success')";

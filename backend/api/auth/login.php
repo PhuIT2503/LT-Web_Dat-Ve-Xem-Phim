@@ -1,6 +1,5 @@
 <?php
 
-// ⭐ FIX QUAN TRỌNG: CHO PHÉP COOKIE HOẠT ĐỘNG VỚI FETCH() + CREDENTIALS
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
@@ -11,14 +10,13 @@ session_set_cookie_params([
 ]);
 session_start();
 
-// ⭐ CORS CHUẨN CHO SESSION
+//CORS CHUẨN CHO SESSION
 header("Access-Control-Allow-Origin: http://localhost");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Content-Type: application/json; charset=UTF-8");
 
-// XỬ LÝ OPTIONS (browser gửi trước mỗi POST có credentials)
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     http_response_code(200);
     exit;

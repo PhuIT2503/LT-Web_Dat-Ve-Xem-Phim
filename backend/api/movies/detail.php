@@ -25,15 +25,11 @@ if ($stmt->rowCount() > 0) {
         "trailerUrl" => $row['trailer_url'],
         "year" => date('Y', strtotime($row['release_date'])),
         "duration" => $row['duration'] . " phút",
-        "release_date" => $row['release_date'], // Trả về ngày gốc để điền vào form
+        "release_date" => $row['release_date'],
         "rating" => $row['rating'],
-        "genre" => $row['category'],
-        
-        // ⭐ QUAN TRỌNG: Thêm 2 dòng này để Frontend biết trạng thái ⭐
+        "genre" => $row['category'], 
         "is_new" => $row['is_new'],
         "is_trending" => $row['is_trending'],
-
-        // Kiểm tra nếu cột tồn tại (tránh lỗi nếu DB thiếu cột)
         "director" => isset($row['director']) ? $row['director'] : "",
         "cast" => isset($row['cast']) ? $row['cast'] : ""
     ];

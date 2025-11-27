@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../css/variables.css">
 
     <style>
-        /* --- CẤU HÌNH DARK THEME --- */
+        /*CẤU HÌNH DARK THEME*/
         body { 
             margin: 0; 
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
@@ -380,7 +380,7 @@
             `).join('');
         }
 
-        // --- XỬ LÝ CHECKBOX ---
+        // XỬ LÝ CHECKBOX
         function toggleAll(source) {
             const checkboxes = document.querySelectorAll('.movie-checkbox');
             checkboxes.forEach(cb => cb.checked = source.checked);
@@ -417,7 +417,7 @@
             loadMovies();
         }
 
-        // --- CÁC HÀM MODAL ---
+        //CÁC HÀM MODAL
         function openAddModal() {
             document.getElementById('movie-form').reset();
             document.getElementById('movie-id').value = '';

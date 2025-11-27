@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 23, 2025 lúc 06:36 PM
--- Phiên bản máy phục vụ: 10.4.32-MariaDB
--- Phiên bản PHP: 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: Nov 26, 2025 at 07:36 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `cinema_db`
+-- Database: `cinema_db`
 --
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `bookings`
+-- Table structure for table `bookings`
 --
 
 CREATE TABLE `bookings` (
@@ -45,18 +45,22 @@ CREATE TABLE `bookings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `bookings`
+-- Dumping data for table `bookings`
 --
 
 INSERT INTO `bookings` (`id`, `booking_code`, `movie_title`, `cinema_room`, `seat_list`, `user_id`, `showtime_id`, `customer_name`, `customer_phone`, `total_amount`, `status`, `voucher_code`, `discount_amount`, `created_at`) VALUES
 (1, 'CGVOLD1', 'Phim (Đơn cũ)', 'Phòng 1', 'Ghế thường', 6, 24, 'Tâm Phú', '113', 529000, 'success', NULL, 0, '2025-11-23 14:16:02'),
 (2, 'CGV205326', 'Lật Mặt 7: Một Điều Ước', 'Phòng 2', 'A1, A2, A3, A4, A5', 6, 26, 'Tâm Phú', '113', 539000, 'success', 'GIAM10K', 10000, '2025-11-23 14:44:45'),
-(3, 'CGV124995', 'Lật Mặt 7: Một Điều Ước', 'Phòng 2', 'C12, C11, C10', 6, 26, 'Công An Xã', '113', 184500, 'success', 'SALE50', 184500, '2025-11-23 15:03:17');
+(3, 'CGV124995', 'Lật Mặt 7: Một Điều Ước', 'Phòng 2', 'C12, C11, C10', 6, 26, 'Công An Xã', '113', 184500, 'success', 'SALE50', 184500, '2025-11-23 15:03:17'),
+(4, 'CGV226150', 'Mưa Đỏ', 'Phòng 2', 'H8, H7', 11, 23, 'Huỳnh Bá Thành', '0394950934', 129500, 'success', 'SALE50', 129500, '2025-11-24 15:08:11'),
+(5, 'CGV731426', 'Em và Trịnh', 'Phòng 2', 'I9', 11, 83, 'Huỳnh Bá Thành', '0394950934', 118300, 'success', 'SALE30', 50700, '2025-11-26 15:37:43'),
+(6, 'CGV206992', 'Mưa Đỏ', 'Phòng 2', 'H7, H8', 11, 46, 'Huỳnh Bá Thành', '0394950934', 207200, 'success', 'SALE20', 51800, '2025-11-26 15:45:59'),
+(7, 'CGV656146', 'Mưa Đỏ', 'Phòng 2', 'I9', 11, 46, 'Huỳnh Bá Thành', '0394950934', 149000, 'success', 'GIAM20K', 20000, '2025-11-26 16:40:33');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `booking_seats`
+-- Table structure for table `booking_seats`
 --
 
 CREATE TABLE `booking_seats` (
@@ -66,7 +70,7 @@ CREATE TABLE `booking_seats` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `booking_seats`
+-- Dumping data for table `booking_seats`
 --
 
 INSERT INTO `booking_seats` (`id`, `booking_id`, `seat_id`) VALUES
@@ -82,12 +86,18 @@ INSERT INTO `booking_seats` (`id`, `booking_id`, `seat_id`) VALUES
 (10, 2, 5),
 (11, 3, 36),
 (12, 3, 35),
-(13, 3, 34);
+(13, 3, 34),
+(14, 4, 92),
+(15, 4, 91),
+(16, 5, 105),
+(17, 6, 91),
+(18, 6, 92),
+(19, 7, 105);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `movies`
+-- Table structure for table `movies`
 --
 
 CREATE TABLE `movies` (
@@ -110,11 +120,11 @@ CREATE TABLE `movies` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `movies`
+-- Dumping data for table `movies`
 --
 
 INSERT INTO `movies` (`id`, `title`, `description`, `poster`, `banner`, `trailer_url`, `release_date`, `duration`, `category`, `director`, `cast`, `rating`, `is_trending`, `is_new`, `created_at`, `updated_at`) VALUES
-(1, 'Mưa Đỏ', 'Lấy bối cảnh 81 ngày đêm khốc liệt tại Thành Cổ Quảng Trị năm 1972, Mưa Đỏ là câu chuyện hư cấu, theo chân một tiểu đội gồm những người lính trẻ tuổi, đầy nhiệt huyết, chiến đấu và bám trụ tại trận địa lịch sử này.', 'https://imgchinhsachcuocsong.vnanet.vn/MediaUpload/Org/2025/07/23/204219-z6833331728306_9920591c2fadf96b8ec838e4967f44a4.jpg', 'https://imgchinhsachcuocsong.vnanet.vn/MediaUpload/Org/2025/07/23/204219-z6833331728306_9920591c2fadf96b8ec838e4967f44a4.jpg', 'https://www.youtube.com/embed/BD6PoZJdt_M', '2025-01-01', 120, 'Chiến tranh, Lịch sử', 'Nguyễn Quang Dũng', 'Nhiều diễn viên trẻ', 'T18', 0, 1, '2025-11-19 02:55:44', '2025-11-23 13:49:32'),
+(1, 'Mưa Đỏ', 'Lấy bối cảnh 81 ngày đêm khốc liệt tại Thành Cổ Quảng Trị năm 1972, Mưa Đỏ là câu chuyện hư cấu, theo chân một tiểu đội gồm những người lính trẻ tuổi, đầy nhiệt huyết, chiến đấu và bám trụ tại trận địa lịch sử này.', 'https://mir-s3-cdn-cf.behance.net/project_modules/1400_webp/0b1372232709307.68a20d789415d.jpg\r\n\r\n', 'https://imgchinhsachcuocsong.vnanet.vn/MediaUpload/Org/2025/07/23/204219-z6833331728306_9920591c2fadf96b8ec838e4967f44a4.jpg', 'https://www.youtube.com/embed/BD6PoZJdt_M', '2025-01-01', 120, 'Chiến tranh, Lịch sử', 'Nguyễn Quang Dũng', 'Nhiều diễn viên trẻ', 'T18', 0, 1, '2025-11-19 02:55:44', '2025-11-24 14:59:57'),
 (2, 'Lật Mặt 7: Một Điều Ước', 'Phim xoay quanh câu chuyện của bà Hai (Thanh Hiền) và bốn người con. Khi bà Hai không may gặp nạn, cần người chăm sóc, bốn người con đùn đẩy nhau. Câu chuyện đặt ra câu hỏi về lòng hiếu thảo và tình cảm gia đình.', 'https://photo-baomoi.bmcdn.me/w700_r1/2024_03_13_17_48553023/057ac6914bdda283fbcc.jpg', 'https://photo-baomoi.bmcdn.me/w700_r1/2024_03_13_17_48553023/057ac6914bdda283fbcc.jpg', 'https://www.youtube.com/embed/d1ZHdosjNX8', '2025-01-01', 138, 'Gia đình, Chính kịch', 'Lý Hải', 'Thanh Hiền, Trương Minh Cường, Đinh Y Nhung, Quách Ngọc Tuyên', 'T13', 0, 1, '2025-11-19 02:57:27', '2025-11-23 17:00:44'),
 (3, 'Gặp Lại Chị Bầu', 'Phúc, một thanh niên có quá khứ bất hảo, cùng bạn bè lập nghiệp ở xóm trọ. Anh gặp Huyền, một cô gái tốt bụng. Tình yêu của họ nảy nở giữa những khó khăn, và bí mật về quá khứ của Huyền dần được hé lộ.', 'https://tse3.mm.bing.net/th/id/OIP.xrGKhbdzKrWVQ2urtnnk-AHaK_?rs=1&pid=ImgDetMain&o=7&rm=3', 'https://tse3.mm.bing.net/th/id/OIP.xrGKhbdzKrWVQ2urtnnk-AHaK_?rs=1&pid=ImgDetMain&o=7&rm=3', 'https://www.youtube.com/embed/8WS_CiekZLc', '2025-01-01', 110, 'Hài, Tình cảm', 'Nhất Trung', 'Anh Tú, Diệu Nhi, Lê Giang, Ngọc Phước', 'T16', 0, 1, '2025-11-19 02:57:27', '2025-11-23 17:01:02'),
 (4, 'Nhà Gia Tiên', 'Câu chuyện về một gia đình gốc Việt tại Mỹ và những xung đột thế hệ. Phim khám phá sự khác biệt văn hóa, kỳ vọng của cha mẹ và ước mơ của con cái trong bối cảnh hiện đại.', 'https://st.download.com.vn/data/image/2025/02/14/nha-gia-tien.jpg', 'https://st.download.com.vn/data/image/2025/02/14/nha-gia-tien.jpg', 'https://www.youtube.com/embed/aR2lnpCLqUk', '2025-01-01', 95, 'Gia đình, Hài', 'Trần Hữu Tấn', 'Lê Khanh, Hồng Đào, Thái Hòa, Tuấn Trần', 'T13', 0, 1, '2025-11-19 02:57:27', '2025-11-23 13:49:32'),
@@ -129,7 +139,7 @@ INSERT INTO `movies` (`id`, `title`, `description`, `poster`, `banner`, `trailer
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `rooms`
+-- Table structure for table `rooms`
 --
 
 CREATE TABLE `rooms` (
@@ -138,7 +148,7 @@ CREATE TABLE `rooms` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `rooms`
+-- Dumping data for table `rooms`
 --
 
 INSERT INTO `rooms` (`id`, `name`) VALUES
@@ -148,7 +158,7 @@ INSERT INTO `rooms` (`id`, `name`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `seats`
+-- Table structure for table `seats`
 --
 
 CREATE TABLE `seats` (
@@ -158,7 +168,7 @@ CREATE TABLE `seats` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `seats`
+-- Dumping data for table `seats`
 --
 
 INSERT INTO `seats` (`id`, `room_id`, `seat_code`) VALUES
@@ -286,7 +296,7 @@ INSERT INTO `seats` (`id`, `room_id`, `seat_code`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `showtimes`
+-- Table structure for table `showtimes`
 --
 
 CREATE TABLE `showtimes` (
@@ -301,7 +311,7 @@ CREATE TABLE `showtimes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `showtimes`
+-- Dumping data for table `showtimes`
 --
 
 INSERT INTO `showtimes` (`id`, `movie_id`, `room_id`, `show_date`, `show_time`, `price`, `created_at`, `updated_at`) VALUES
@@ -485,34 +495,59 @@ INSERT INTO `showtimes` (`id`, `movie_id`, `room_id`, `show_date`, `show_time`, 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `username` varchar(100) NOT NULL,
   `email` varchar(150) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
   `password_hash` varchar(255) NOT NULL,
   `role` enum('user','admin') DEFAULT 'user',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `dob` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `users`
+-- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `role`, `created_at`) VALUES
-(1, 'hienminh7383', 'hienminh7383@gmail.com', '$2y$10$X31kJINyzwSVX32ZlAc.ae284jw0HvKm6z5q8cLhS171AqwnIExvm', 'admin', '2025-11-13 11:46:05'),
-(2, 'admin', 'admin123@gmail.com', '$2y$10$MTPlin8WcMhdbMl/ahkWDOrKiJrrTeP5k1AXZNKhgBbOpocR0E5Zy', 'user', '2025-11-14 03:13:48'),
-(4, 'Bá Thành', 'huynhbathanh2110200@gmail.com', '$2y$10$6emhsr.f9MWtmQHOQGFUh.GB8R6mxJvDUhzkdKGFGuFVJYkBR.tfy', 'user', '2025-11-21 12:05:56'),
-(5, 'Bá Thành', 'huynhbathanh21102005@gmail.com', '$2y$10$YSjdfdg4x8S33GfYDcNR8OCn8VE9eIdM8DcLptwaptRhpdA4wYd9q', 'user', '2025-11-21 12:06:19'),
-(6, 'Tâm Phú', 'phu@gmail.com', '$2y$10$5lpLDkdAKEX7ljsd9o6rdehwjA8loaueTs8Oc9QcZC9r1iTOsCsda', 'user', '2025-11-23 14:14:38'),
-(7, 'Admin', 'admin@gmail.com', '$2y$10$S/x1cl2FmEZx229MOvGfA.blF3UoOO4v4iD3xZF1vm07TGNAkqCBK', 'admin', '2025-11-23 16:35:23');
+INSERT INTO `users` (`id`, `username`, `email`, `phone`, `password_hash`, `role`, `created_at`, `dob`) VALUES
+(1, 'hienminh7383', 'hienminh7383@gmail.com', NULL, '$2y$10$X31kJINyzwSVX32ZlAc.ae284jw0HvKm6z5q8cLhS171AqwnIExvm', 'admin', '2025-11-13 11:46:05', NULL),
+(6, 'Tâm Phú', 'phu@gmail.com', NULL, '$2y$10$5lpLDkdAKEX7ljsd9o6rdehwjA8loaueTs8Oc9QcZC9r1iTOsCsda', 'user', '2025-11-23 14:14:38', NULL),
+(7, 'Admin', 'admin@gmail.com', NULL, '$2y$10$S/x1cl2FmEZx229MOvGfA.blF3UoOO4v4iD3xZF1vm07TGNAkqCBK', 'admin', '2025-11-23 16:35:23', NULL),
+(11, 'Bá Thành', 'thanh@gmail.com', '0945882215', '$2y$10$BrK.zs7G.QbOnlmBlDZQC.dhfiUKMHMBfKDor35EwOeG/aRf3ldie', 'user', '2025-11-24 14:30:46', '1999-10-22');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `voucher`
+-- Table structure for table `user_vouchers`
+--
+
+CREATE TABLE `user_vouchers` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `voucher_id` int(11) NOT NULL,
+  `granted_date` datetime DEFAULT current_timestamp(),
+  `is_used` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_vouchers`
+--
+
+INSERT INTO `user_vouchers` (`id`, `user_id`, `voucher_id`, `granted_date`, `is_used`) VALUES
+(1, 6, 2, '2025-11-26 23:26:16', 0),
+(2, 11, 10, '2025-11-26 23:26:46', 0),
+(3, 11, 2, '2025-11-26 23:39:43', 0),
+(4, 11, 3, '2025-11-26 23:39:43', 0),
+(5, 11, 4, '2025-11-26 23:39:43', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `voucher`
 --
 
 CREATE TABLE `voucher` (
@@ -524,11 +559,11 @@ CREATE TABLE `voucher` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `voucher`
+-- Dumping data for table `voucher`
 --
 
 INSERT INTO `voucher` (`id`, `noi_dung`, `mo_ta`, `han_su_dung`, `giam_gia`) VALUES
-(1, 'GIAM10K', 'Giảm giá 10,000 VND cho đơn đặt vé bất kỳ', '2025-12-31', '10000'),
+(1, 'GIAM10K', 'Giảm giá 10,000 VND cho đơn đặt vé bất kỳ', '2020-01-01', '10000'),
 (2, 'GIAM20K', 'Giảm giá 20,000 VND cho đơn đặt vé trên 100,000 VND', '2025-12-31', '20000'),
 (3, 'GIAM30K', 'Giảm giá 30,000 VND cho đơn đặt vé trên 150,000 VND', '2025-12-31', '30000'),
 (4, 'GIAM40K', 'Giảm giá 40,000 VND cho đơn đặt vé trên 200,000 VND', '2025-12-31', '40000'),
@@ -540,11 +575,11 @@ INSERT INTO `voucher` (`id`, `noi_dung`, `mo_ta`, `han_su_dung`, `giam_gia`) VAL
 (10, 'SALE50', 'Giảm 50% cho hóa đơn trên 500,000 VND (voucher cao nhất)', '2025-12-31', '50%');
 
 --
--- Chỉ mục cho các bảng đã đổ
+-- Indexes for dumped tables
 --
 
 --
--- Chỉ mục cho bảng `bookings`
+-- Indexes for table `bookings`
 --
 ALTER TABLE `bookings`
   ADD PRIMARY KEY (`id`),
@@ -552,7 +587,7 @@ ALTER TABLE `bookings`
   ADD KEY `showtime_id` (`showtime_id`);
 
 --
--- Chỉ mục cho bảng `booking_seats`
+-- Indexes for table `booking_seats`
 --
 ALTER TABLE `booking_seats`
   ADD PRIMARY KEY (`id`),
@@ -560,26 +595,26 @@ ALTER TABLE `booking_seats`
   ADD KEY `seat_id` (`seat_id`);
 
 --
--- Chỉ mục cho bảng `movies`
+-- Indexes for table `movies`
 --
 ALTER TABLE `movies`
   ADD PRIMARY KEY (`id`);
 
 --
--- Chỉ mục cho bảng `rooms`
+-- Indexes for table `rooms`
 --
 ALTER TABLE `rooms`
   ADD PRIMARY KEY (`id`);
 
 --
--- Chỉ mục cho bảng `seats`
+-- Indexes for table `seats`
 --
 ALTER TABLE `seats`
   ADD PRIMARY KEY (`id`),
   ADD KEY `room_id` (`room_id`);
 
 --
--- Chỉ mục cho bảng `showtimes`
+-- Indexes for table `showtimes`
 --
 ALTER TABLE `showtimes`
   ADD PRIMARY KEY (`id`),
@@ -587,100 +622,121 @@ ALTER TABLE `showtimes`
   ADD KEY `room_id` (`room_id`);
 
 --
--- Chỉ mục cho bảng `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- Chỉ mục cho bảng `voucher`
+-- Indexes for table `user_vouchers`
+--
+ALTER TABLE `user_vouchers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `voucher_id` (`voucher_id`);
+
+--
+-- Indexes for table `voucher`
 --
 ALTER TABLE `voucher`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT cho các bảng đã đổ
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT cho bảng `bookings`
+-- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT cho bảng `booking_seats`
+-- AUTO_INCREMENT for table `booking_seats`
 --
 ALTER TABLE `booking_seats`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
--- AUTO_INCREMENT cho bảng `movies`
+-- AUTO_INCREMENT for table `movies`
 --
 ALTER TABLE `movies`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
--- AUTO_INCREMENT cho bảng `rooms`
+-- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT cho bảng `seats`
+-- AUTO_INCREMENT for table `seats`
 --
 ALTER TABLE `seats`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=121;
 
 --
--- AUTO_INCREMENT cho bảng `showtimes`
+-- AUTO_INCREMENT for table `showtimes`
 --
 ALTER TABLE `showtimes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=178;
 
 --
--- AUTO_INCREMENT cho bảng `users`
+-- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
--- AUTO_INCREMENT cho bảng `voucher`
+-- AUTO_INCREMENT for table `user_vouchers`
+--
+ALTER TABLE `user_vouchers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `voucher`
 --
 ALTER TABLE `voucher`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
--- Các ràng buộc cho các bảng đã đổ
+-- Constraints for dumped tables
 --
 
 --
--- Các ràng buộc cho bảng `bookings`
+-- Constraints for table `bookings`
 --
 ALTER TABLE `bookings`
   ADD CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`showtime_id`) REFERENCES `showtimes` (`id`);
 
 --
--- Các ràng buộc cho bảng `booking_seats`
+-- Constraints for table `booking_seats`
 --
 ALTER TABLE `booking_seats`
   ADD CONSTRAINT `booking_seats_ibfk_1` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `booking_seats_ibfk_2` FOREIGN KEY (`seat_id`) REFERENCES `seats` (`id`);
 
 --
--- Các ràng buộc cho bảng `seats`
+-- Constraints for table `seats`
 --
 ALTER TABLE `seats`
   ADD CONSTRAINT `seats_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`);
 
 --
--- Các ràng buộc cho bảng `showtimes`
+-- Constraints for table `showtimes`
 --
 ALTER TABLE `showtimes`
   ADD CONSTRAINT `showtimes_ibfk_1` FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`),
   ADD CONSTRAINT `showtimes_ibfk_2` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`);
+
+--
+-- Constraints for table `user_vouchers`
+--
+ALTER TABLE `user_vouchers`
+  ADD CONSTRAINT `user_vouchers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `user_vouchers_ibfk_2` FOREIGN KEY (`voucher_id`) REFERENCES `voucher` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

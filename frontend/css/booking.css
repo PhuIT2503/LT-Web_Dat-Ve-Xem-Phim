@@ -1,4 +1,4 @@
-/* === NỘI DUNG CSS MỚI CHO TRANG BOOKING === */
+/*TRANG BOOKING*/
 .booking-container {
     display: flex;
     flex-wrap: wrap; 
@@ -24,7 +24,7 @@
 .date-selector {
     display: flex;
     gap: 10px;
-    margin-bottom: 10px; /* Giảm margin */
+    margin-bottom: 10px;
     overflow-x: auto;
     padding-bottom: 10px;
 }
@@ -49,7 +49,7 @@
     font-weight: bold;
 }
 
-/* === CSS MỚI: Dải chọn suất chiếu === */
+/*Dải chọn suất chiếu */
 .showtime-title {
     font-size: 1.2rem;
     color: var(--grey-color);
@@ -60,7 +60,7 @@
     display: flex;
     gap: 10px;
     margin-bottom: 25px;
-    flex-wrap: wrap; /* Cho phép xuống hàng */
+    flex-wrap: wrap; 
 }
 .time-item {
     background-color: var(--dark-color);
@@ -82,7 +82,7 @@
     border-color: var(--primary-color);
     color: #fff;
 }
-/* === Kết thúc CSS MỚI === */
+/*Kết thúc */
 
 .screen {
     background-color: #fff;
@@ -153,7 +153,7 @@
     border-radius: 4px;
 }
 
-/* === CSS MỚI: Phần chọn Combo Bắp/Nước === */
+/*Phần chọn Combo Bắp/Nước */
 .combo-section {
     margin-top: 30px;
     border-top: 1px solid var(--grey-color);
@@ -180,7 +180,7 @@
     object-fit: cover;
 }
 .combo-info {
-    flex: 1; /* Đẩy bộ đếm sang phải */
+    flex: 1; 
 }
 .combo-info h4 {
     font-size: 1.2rem;
@@ -221,7 +221,7 @@
     font-weight: bold;
     color: var(--light-color);
 }
-/* === Kết thúc CSS MỚI === */
+/*Kết thúc*/
 
 
 .booking-sidebar {
@@ -281,7 +281,7 @@
     font-size: 1rem;
 }
 
-/* === CSS CẬP NHẬT: Tóm tắt đặt vé === */
+/*Tóm tắt đặt vé  */
 .summary-details {
     border-bottom: 1px dashed var(--grey-color);
     padding-bottom: 10px;
@@ -298,7 +298,7 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
-    font-size: 1rem; /* Giảm font size cho chi tiết */
+    font-size: 1rem;
 }
 .summary-item span:first-child {
     color: var(--grey-color);
@@ -307,17 +307,17 @@
 .summary-item span:last-child {
     font-weight: 600;
     color: var(--light-color);
-    white-space: nowrap; /* Tránh vỡ dòng */
+    white-space: nowrap; 
 }
 /* CSS cho mục ghế */
 #selected-list {
     color: var(--light-color);
     font-weight: 600;
-    word-break: break-all; /* Xuống hàng nếu quá nhiều ghế */
+    word-break: break-all;
 }
 /* CSS cho danh sách combo (JS tạo ra) */
 #combo-summary-list .summary-item span:first-child {
-    color: var(--light-color); /* Màu trắng cho tên combo */
+    color: var(--light-color);
 }
 
 .summary-total {
@@ -330,7 +330,7 @@
     font-weight: bold;
     color: var(--primary-color);
 }
-/* === Kết thúc CSS CẬP NHẬT === */
+/* Kết thúc CSS CẬP NHẬT */
 
 
 #confirm-booking {
@@ -345,7 +345,7 @@
     text-align: center;
 }
 
-/* === CSS RESPONSIVE RIÊNG CỦA BOOKING (TỪ booking.css) === */
+/*CSS RESPONSIVE RIÊNG CỦA BOOKING (TỪ booking.css)*/
 @media (max-width: 1024px) {
     .booking-main {
         min-width: 100%;
@@ -364,7 +364,7 @@
         font-size: 0.6rem;
     }
 }
-@media (max-width: 640px) { /* Thêm breakpoint cho combo */
+@media (max-width: 640px) { 
      .booking-main {
         padding: 15px;
     }
@@ -374,7 +374,7 @@
     }
     .combo-quantity-selector {
         margin-top: 10px;
-        align-self: flex-end; /* Đẩy bộ đếm sang phải */
+        align-self: flex-end;
     }
 }
 @media (max-width: 480px) {

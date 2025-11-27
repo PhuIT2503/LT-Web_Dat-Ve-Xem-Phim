@@ -4,7 +4,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - var(--header-height)); /* Chiều cao tối thiểu */
+    min-height: calc(100vh - var(--header-height));
     padding: 40px 4%;
 
     background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('../hinhnen.jpg');
@@ -14,7 +14,7 @@
 }
 
 .auth-form-box {
-    background-color: rgba(24, 24, 24, 0.9); /* var(--light-dark-color) với 90% opacity */
+    background-color: rgba(24, 24, 24, 0.9);
     padding: 40px 50px;
     border-radius: 8px;
     box-shadow: 0 5px 20px rgba(0,0,0,0.4);

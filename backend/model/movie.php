@@ -15,7 +15,6 @@ class Movie {
     public $rating;
     public $is_trending;
     public $is_new;
-    // ⭐ THÊM 2 BIẾN MỚI
     public $director;
     public $cast;
 
@@ -47,7 +46,7 @@ class Movie {
         return $stmt;
     }
 
-    // ⭐ CẬP NHẬT HÀM TẠO PHIM (Thêm director, cast)
+    //CẬP NHẬT HÀM TẠO PHIM (Thêm director, cast)
     public function create() {
         $query = "INSERT INTO " . $this->table . " 
                   (title, description, poster, banner, trailer_url, release_date, duration, category, rating, is_trending, is_new, director, cast)
@@ -55,12 +54,9 @@ class Movie {
 
         $stmt = $this->conn->prepare($query);
 
-        // Clean data
         $this->title = htmlspecialchars(strip_tags($this->title));
         $this->description = htmlspecialchars(strip_tags($this->description));
-        // ... (các biến khác clean tương tự nếu cần)
 
-        // Bind params
         $stmt->bindParam(':title', $this->title);
         $stmt->bindParam(':description', $this->description);
         $stmt->bindParam(':poster', $this->poster);
@@ -72,7 +68,6 @@ class Movie {
         $stmt->bindParam(':rating', $this->rating);
         $stmt->bindParam(':is_trending', $this->is_trending);
         $stmt->bindParam(':is_new', $this->is_new);
-        // ⭐ Bind thêm 2 tham số mới
         $stmt->bindParam(':director', $this->director);
         $stmt->bindParam(':cast', $this->cast);
 
@@ -82,7 +77,7 @@ class Movie {
         return false;
     }
 
-    // ⭐ CẬP NHẬT HÀM SỬA PHIM (Thêm director, cast)
+    //HÀM SỬA PHIM (Thêm director, cast)
     public function update() {
         $query = "UPDATE " . $this->table . " 
                   SET title = :title, 
@@ -116,7 +111,6 @@ class Movie {
         $stmt->bindParam(':rating', $this->rating);
         $stmt->bindParam(':is_trending', $this->is_trending);
         $stmt->bindParam(':is_new', $this->is_new);
-        // ⭐ Bind thêm 2 tham số mới
         $stmt->bindParam(':director', $this->director);
         $stmt->bindParam(':cast', $this->cast);
         $stmt->bindParam(':id', $this->id);
